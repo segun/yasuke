@@ -2,10 +2,10 @@
 pragma solidity ^0.7.0;
 
 import "./interfaces/AuctionInterface.sol";
-import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract Auction is AuctionInterface {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     address owner;
 
