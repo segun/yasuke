@@ -1,44 +1,32 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT-0
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./Auction.sol";
+import "./Storage.sol";
 import "./library/console.sol";
+import "./library/models.sol";
+import "./interfaces/StorageInterface.sol";
+import "./interfaces/YasukeInterface.sol";
 
-contract YASUKE is ERC1155, AccessControl {
-    string uri;
-    address minter;
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER");
+contract Yasuke is ERC1155, AccessControl, YasukeInterface {
+    string internal uri;
+    address internal minter;
+    bytes32 internal constant MINTER_ROLE = keccak256("MINTER");
+    StorageInterface internal store;
+    address internal storeAddress = address(0);
 
-    struct Asset {
-        uint256 tokenId;
-        address owner;
-        address bidContract;
-        string uri;
-    }
-
-    struct BidInfo {
-        uint256 tokenId;
-        address owner;
-        uint256 startBlock;
-        uint256 endBlock;
-        uint256 buyNowPrice;
-        address[] bidders;
-        uint256[] bids;
-        address highestBidder;
-        uint256 highestBid;
-        bool cancelled;
-    }
-
-    mapping(uint256 => address) owners;
-
-    mapping(uint256 => Auction) bidContracts;
-
-    constructor(string memory _uri) ERC1155(_uri) {
-        uri = _uri;        
+    constructor(string memory _uri, address sa) ERC1155(_uri) {
+        uri = _uri;
         minter = msg.sender;
+        console.log("Minter %s", minter);
+        // Production
+        storeAddress = sa;
+        store = StorageInterface(storeAddress);
+        // Testing
+        // store = new Storage();
         _setupRole(MINTER_ROLE, minter);
     }
 
@@ -47,44 +35,65 @@ contract YASUKE is ERC1155, AccessControl {
         bytes32 role,
         string memory rm
     ) {
-        require(hasRole(role, user), rm);
+        console.log("Msg.Sender %s", msg.sender);
+        require(hasRole(role, user), rm);        
         _;
     }
 
     function mint(
+        address sender,
         uint256 tokenId,
         uint256 amount,
         uint256 startBlock,
         uint256 endBlock,
-        uint256 maxBid
-    ) public isMemberOf(msg.sender, MINTER_ROLE, "NAM") {
+        uint256 sellNowPrice,
+        uint256 minimumBid
+    ) public override isMemberOf(sender, MINTER_ROLE, "NAM") {        
         console.log("Minting %d", tokenId);
-        _mint(msg.sender, tokenId, amount, "");
-        owners[tokenId] = msg.sender;
-        Auction bidContract =
-            new Auction(tokenId, msg.sender, startBlock, endBlock, maxBid);
-        bidContracts[tokenId] = bidContract;
+        _mint(sender, tokenId, amount, "");
+        store.addOwner(tokenId, sender);
+        Auction auctionContract =
+            new Auction(
+                tokenId,
+                sender,
+                startBlock,
+                endBlock,
+                sellNowPrice,
+                minimumBid
+            );
+        store.addAuctionContract(tokenId, auctionContract);
+        console.log("Token %d Minted", tokenId);
     }
 
-    function getTokenInfo(uint256 tokenId) public view returns (Asset memory) {
-        Asset memory a =
-            Asset(
+    function getTokenInfo(uint256 tokenId)
+        public
+        view
+        override
+        returns (Models.Asset memory)
+    {
+        Models.Asset memory a =
+            Models.Asset(
                 tokenId,
-                owners[tokenId],
-                address(bidContracts[tokenId]),
+                store.getOwner(tokenId),
+                address(store.getAuctionContract(tokenId)),
                 uri
             );
 
         return a;
     }
 
-    function getBidInfo(uint256 tokenId) public view returns (BidInfo memory) {
-        Auction a = bidContracts[tokenId];
+    function getAuctionInfo(uint256 tokenId)
+        public
+        view
+        override
+        returns (Models.AuctionInfo memory)
+    {
+        Auction a = store.getAuctionContract(tokenId);
 
-        BidInfo memory b =
-            BidInfo(
+        Models.AuctionInfo memory b =
+            Models.AuctionInfo(
                 tokenId,
-                owners[tokenId],
+                store.getOwner(tokenId),
                 a.getStartBlock(),
                 a.getEndBlock(),
                 a.getBuyNowPrice(),
@@ -103,7 +112,7 @@ contract YASUKE is ERC1155, AccessControl {
         uint256 tokenId,
         uint256 amount,
         bytes memory data
-    ) public {
+    ) public override {
         safeTransferFrom(msg.sender, to, tokenId, amount, data);
     }
 }

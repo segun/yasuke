@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT-0
 pragma solidity ^0.7.0;
 
 import "./interfaces/AuctionInterface.sol";
@@ -59,12 +59,13 @@ contract Auction is AuctionInterface {
         return bids;
     }    
 
-    constructor(
+    constructor (
         uint256 _tokenId,
         address _owner,
         uint256 _startBlock,
         uint256 _endBlock,
-        uint256 _buyNowPrice
+        uint256 _buyNowPrice,
+        uint256 _minimumBid
     ) {
         require(_tokenId > 0, "Zero Token ID");
         require(_owner != address(0), "Owner is  address(0)");
@@ -78,6 +79,7 @@ contract Auction is AuctionInterface {
         startBlock = _startBlock;
         endBlock = _endBlock;
         buyNowPrice = _buyNowPrice;
+        highestBindingBid = _minimumBid;
     }
 
     modifier onlyAfterStart() {

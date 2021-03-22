@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT-0
 pragma solidity ^0.7.0;
 
 interface AuctionInterface {
