@@ -1,5 +1,5 @@
-import { task } from "hardhat/config";
-import "@nomiclabs/hardhat-waffle";
+import '@nomiclabs/hardhat-waffle';
+import 'hardhat-contract-sizer';
 
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -19,11 +19,18 @@ import "@nomiclabs/hardhat-waffle";
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.7.3",
-  settings: {
-    optimizer: {
-      enabled: true,
-      runs: 200
+  solidity: {
+    version: "0.7.3",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 20000
+      }
+    },
+    contractSizer: {
+      alphaSort: true,
+      runOnCompile: true,
+      disambiguatePaths: false,
     }
   }
 };
