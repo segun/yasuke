@@ -16,12 +16,14 @@ contract Yasuke is YasukeInterface {
     StorageInterface internal store;
 
     constructor(address storeAddress) {
+        console.log("New Contract: %s", address(this));
         minter = msg.sender;
         store = StorageInterface(storeAddress);
         store.setAdmin(address(this));
     }
 
     function upgrade(address newYasuke) public {
+        console.log("Sender: %s, Minter: %s", msg.sender, minter);
         require(msg.sender == minter);
         store.setAdmin(newYasuke);
     }
@@ -165,6 +167,7 @@ contract Yasuke is YasukeInterface {
 
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
         Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), address(t));
         return a;
     }

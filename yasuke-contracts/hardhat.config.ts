@@ -41,9 +41,10 @@ module.exports = {
     sokol: {
       url: "https://sokol.poa.network",
       accounts: ["498ea38b2b6408be76d6c45b2939c2f195a16ac4bca7e62772fc549c7a798176"],
-      // gas: 582876,
-      // gasPrice: 10000000000
-    }    
-  },    
+    }
+  },
+  mocha: {
+    timeout: 120000
+  },
 };
 

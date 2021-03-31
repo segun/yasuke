@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import './interfaces/StorageInterface.sol';
 import './library/models.sol';
+import './library/console.sol';
 import './Token.sol';
 
 contract Storage is StorageInterface {
@@ -28,6 +29,7 @@ contract Storage is StorageInterface {
         if (admin == address(0)) {
             admin = _admin;
         } else {
+            console.log("Sender: %s, Admin: %s", msg.sender, admin);
             require(msg.sender == admin, "You can't do that");
             admin = _admin;
         }
