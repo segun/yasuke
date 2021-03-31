@@ -10,6 +10,7 @@ library Models {
     }
 
     struct AuctionInfo {
+        uint256 auctionId;
         uint256 tokenId;
         address owner;
         uint256 startBlock;

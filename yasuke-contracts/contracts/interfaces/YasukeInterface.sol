@@ -6,6 +6,7 @@ import '../library/models.sol';
 interface YasukeInterface {
     function startAuction(
         uint256 tokenId,
+        uint256 auctionId,
         uint256 startBlock,
         uint256 endBlock,
         uint256 sellNowPrice,
@@ -13,7 +14,7 @@ interface YasukeInterface {
     ) external;
 
     function issueToken(
-        uint256 tokenId,
+        uint256 tokenId,        
         address owner,
         string memory _uri,
         string memory _name,
@@ -22,13 +23,13 @@ interface YasukeInterface {
 
     function getTokenInfo(uint256 tokenId) external view returns (Models.Asset memory);
 
-    function getAuctionInfo(uint256 tokenId) external view returns (Models.AuctionInfo memory);
+    function getAuctionInfo(uint256 tokenId, uint256 auctionId) external view returns (Models.AuctionInfo memory);
 
-    function placeBid(uint256 tokenId) external payable;
+    function placeBid(uint256 tokenId, uint256 auctionId) external payable;
 
-    function withdraw(uint256 tokenId) external;
+    function withdraw(uint256 tokenId, uint256 auctionId) external;
 
-    function cancelAuction(uint256 tokenId) external;
+    function cancelAuction(uint256 tokenId, uint256 auctionId) external;
 
     event LogBid(address, uint256);
 

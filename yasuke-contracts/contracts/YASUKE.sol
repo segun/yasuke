@@ -14,7 +14,6 @@ contract Yasuke is YasukeInterface {
     address internal minter;
 
     StorageInterface internal store;
-    Token internal token;
 
     constructor(address storeAddress) {
         minter = msg.sender;
@@ -29,14 +28,18 @@ contract Yasuke is YasukeInterface {
 
     function startAuction(
         uint256 tokenId,
+        uint256 auctionId,
         uint256 startBlock,
         uint256 endBlock,
         uint256 sellNowPrice,
         uint256 minimumBid
     ) public override {
         Token t = store.getToken(tokenId);
-        require(t.ownerOf(tokenId) == msg.sender, 'WO');  
-        Models.AuctionInfo memory ai = Models.AuctionInfo(tokenId, msg.sender, startBlock, endBlock, sellNowPrice, address(0), 0, false, minimumBid);
+        require(t.ownerOf(tokenId) == msg.sender, 'WO');
+        require(!store.isInAuction(tokenId), 'AIP');
+        require(!store.isStarted(tokenId, auctionId), 'AAS');
+        Models.AuctionInfo memory ai =
+            Models.AuctionInfo(auctionId, tokenId, msg.sender, startBlock, endBlock, sellNowPrice, address(0), 0, false, minimumBid);
         store.startAuction(ai);
     }
 
@@ -54,29 +57,24 @@ contract Yasuke is YasukeInterface {
         store.setOwner(tokenId, owner);
     }
 
-    function endBid(uint256 tokenId) public {
-        require(msg.sender == minter, 'NAM');
+    function endBid(uint256 tokenId, uint256 auctionId) public {
+        shouldBeStarted(tokenId, auctionId);
+        store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
     }
 
-    function placeBid(uint256 tokenId)
-        public
-        payable
-        override
-    {
-        require(store.isStarted(tokenId), 'ANS');
-        require(msg.value > 0, 'CNB0');
-        require(block.number >= store.getStartBlock(tokenId), 'ANS');
-        require(block.number <= store.getEndBlock(tokenId), 'AE');
-        require(!store.isCancelled(tokenId), 'AC');
-        require(msg.sender != store.getOwner(tokenId), "OCB");        
+    function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
+        Token t = store.getToken(tokenId);
+        shouldBeStarted(tokenId, auctionId);
+        require(msg.value > 0, 'CNB0');        
+        require(msg.sender != t.ownerOf(tokenId), 'OCB');
 
-        uint256 fundsByBidder = store.getFundsByBidder(tokenId, msg.sender);
-        uint256 sellNowPrice = store.getSellNowPrice(tokenId);
+        uint256 fundsByBidder = store.getFundsByBidder(tokenId, auctionId, msg.sender);
+        uint256 sellNowPrice = store.getSellNowPrice(tokenId, auctionId);
 
         uint256 newBid = msg.value.add(fundsByBidder);
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            store.setEndBlock(tokenId, block.number); // forces the auction to end
+            store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
 
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);
@@ -88,71 +86,99 @@ contract Yasuke is YasukeInterface {
             // bid should now be max bid
             newBid = sellNowPrice;
         } else {
-            require(newBid > store.getHighestBid(tokenId), 'BTL');
+            require(newBid > store.getHighestBid(tokenId, auctionId), 'BTL');
         }
 
-        store.setFundsByBidder(tokenId, msg.sender, newBid);
-        store.setHighestBidder(tokenId, msg.sender);
-        store.setHighestBid(tokenId, newBid);
-        store.addBidder(tokenId, msg.sender);
-        store.addBid(tokenId, newBid);
+        store.setFundsByBidder(tokenId, auctionId, msg.sender, newBid);
+        store.setHighestBidder(tokenId, auctionId, msg.sender);
+        store.setHighestBid(tokenId, auctionId, newBid);
+        store.addBidder(tokenId, auctionId, msg.sender);
+        store.addBid(tokenId, auctionId, newBid);
 
         emit LogBid(msg.sender, newBid);
     }
 
-    function withdraw(uint256 tokenId) public override {
-        require(block.number > store.getEndBlock(tokenId) || store.isCancelled(tokenId));
-        bool cancelled = store.isCancelled(tokenId);
-        address owner = store.getOwner(tokenId);
-        address highestBidder = store.getHighestBidder(tokenId);
+    function withdraw(uint256 tokenId, uint256 auctionId) public override {
+        Token t = store.getToken(tokenId);
+        require(store.isStarted(tokenId, auctionId), 'ANS');
+        require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
+        bool cancelled = store.isCancelled(tokenId, auctionId);
+        address owner = t.ownerOf(tokenId);
+        address highestBidder = store.getHighestBidder(tokenId, auctionId);
+
         if (cancelled) {
             // owner can not withdraw anything, everyone should be refunded
             require(msg.sender != owner, 'AWC');
-        } else {
-            // if the bidding is not cancelled, highest bidder can not withdraw
-            // TODO: When highest bidder call withdraw, transfer token from owner to highest bidder
-            Token t = store.getToken(tokenId);
-            t.transferFrom(owner, msg.sender, tokenId);
         }
 
         // everyone else that participated, but didn't win should be allowed to withdraw their funds.
-        uint256 withdrawalAmount = store.getFundsByBidder(tokenId, msg.sender);
+        uint256 withdrawalAmount = store.getFundsByBidder(tokenId, auctionId, msg.sender);
         address payable withdrawalAccount = msg.sender;
 
         if (withdrawalAccount == owner) {
             // owner should be allowed to withdrawal highestBid only if highestbidder is not address(0)
-            require(store.getHighestBidder(tokenId) != address(0));
-            withdrawalAmount = store.getHighestBid(tokenId);
+            require(highestBidder != address(0), 'HBNZ');
+            withdrawalAmount = store.getHighestBid(tokenId, auctionId);
+            require(store.getFundsByBidder(tokenId, auctionId, highestBidder) == withdrawalAmount, 'HBFAW');
         }
 
-        require(withdrawalAmount > 0, 'ZW');
-        store.setFundsByBidder(tokenId, withdrawalAccount, store.getFundsByBidder(tokenId, withdrawalAccount).sub(withdrawalAmount));
+        bool withdrawEth = false;
+        if (withdrawalAccount != owner && withdrawalAccount != highestBidder) {
+            // if sender is not owner only then can we reduce the funds by bidder
+            store.setFundsByBidder(tokenId, auctionId, withdrawalAccount, 0);
+            withdrawEth = true;
+        } else if (withdrawalAccount == owner) {
+            // withdraw funds from highest bidder
+            store.setFundsByBidder(tokenId, auctionId, highestBidder, 0);
+            withdrawEth = true;
+        } else if (withdrawalAccount == highestBidder) {
+            if (cancelled) {
+                // do normal refund
+                store.setFundsByBidder(tokenId, auctionId, highestBidder, 0);
+                withdrawEth = true;
+            } else {
+                // transfer the token from owner to highest bidder
+                address tokenOwner = t.ownerOf(tokenId);
+                require(t.changeOwnership(tokenId, tokenOwner, highestBidder), 'CNCO');                
+                withdrawEth = false;
+                store.setInAuction(tokenId, false); // we can create new auction
+                store.setOwner(tokenId, highestBidder);
+            }
+        }
 
-        bool sent = withdrawalAccount.send(withdrawalAmount);
+        // console.log("WE: %s, ACC: %s, WA: %d", withdrawEth, withdrawalAccount, withdrawalAmount);
+        if (withdrawEth) {
+            require(withdrawalAmount > 0, 'ZW');
+            bool sent = withdrawalAccount.send(withdrawalAmount);
 
-        require(sent, 'WF');
+            require(sent, 'WF');
+        }
 
         emit LogWithdrawal(msg.sender, withdrawalAccount, withdrawalAmount);
     }
 
-    function cancelAuction(uint256 tokenId)
-        public
-        override
-    {
-        require(block.number >= store.getStartBlock(tokenId), 'ANC');
-        require(block.number <= store.getEndBlock(tokenId), 'AE');
-        require(!store.isCancelled(tokenId), 'AC');
-        store.setCancelled(tokenId, true);
+    function cancelAuction(uint256 tokenId, uint256 auctionId) public override {
+        shouldBeStarted(tokenId, auctionId);
+        store.setCancelled(tokenId, auctionId, true);
         emit LogCanceled();
     }
 
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
-        Models.Asset memory a = Models.Asset(tokenId, store.getOwner(tokenId), address(store.getToken(tokenId)));
+        Token t = store.getToken(tokenId);
+        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), address(t));
         return a;
     }
 
-    function getAuctionInfo(uint256 tokenId) public view override returns (Models.AuctionInfo memory) {
-        Models.AuctionInfo memory b = store.getAuction(tokenId);
+    function getAuctionInfo(uint256 tokenId, uint256 auctionId) public view override returns (Models.AuctionInfo memory) {
+        Models.AuctionInfo memory b = store.getAuction(tokenId, auctionId);
         return b;
     }
+
+    function shouldBeStarted(uint256 tokenId, uint256 auctionId) public view {
+        require(block.number >= store.getStartBlock(tokenId, auctionId), 'ANC');
+        require(block.number <= store.getEndBlock(tokenId, auctionId), 'AE');
+        require(!store.isCancelled(tokenId, auctionId), 'AC');
+        require(store.isStarted(tokenId, auctionId), 'ANS');
+        require(store.isInAuction(tokenId), 'ANIP');        
+    }    
 }

@@ -9,47 +9,80 @@ interface StorageInterface {
 
     function startAuction(Models.AuctionInfo memory ai) external;
 
-    function getAuction(uint256 tokenId) external view returns (Models.AuctionInfo memory);
+    function getAuction(uint256 tokenId, uint256 auctionId) external view returns (Models.AuctionInfo memory);
 
-    function getFundsByBidder(uint256 tokenId, address sender) external view returns (uint256);
+    function getFundsByBidder(
+        uint256 tokenId,
+        uint256 auctionId,
+        address sender
+    ) external view returns (uint256);
 
-    function getSellNowPrice(uint256 tokenId) external view returns (uint256);
+    function getSellNowPrice(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
-    function getHighestBid(uint256 tokenId) external view returns (uint256);
+    function getHighestBid(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
-    function getStartBlock(uint256 tokenId) external view returns (uint256);
+    function getStartBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
-    function isCancelled(uint256 tokenId) external view returns (bool);
+    function isCancelled(uint256 tokenId, uint256 auctionId) external view returns (bool);
 
-    function setCancelled(uint256 tokenId, bool cancelled) external;
+    function setCancelled(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool cancelled
+    ) external;
 
-    function isStarted(uint256 tokenId) external view returns (bool);
+    function isStarted(uint256 tokenId, uint256 auctionId) external view returns (bool);
 
-    function setStarted(uint256 tokenId, bool started) external;    
+    function isInAuction(uint256 tokenId) external view returns (bool);
 
-    function setHighestBid(uint256 tokenId, uint256 highestBid) external;
+    function setStarted(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool started
+    ) external;
 
-    function setEndBlock(uint256 tokenId, uint256 endBlock) external;
+    function setInAuction(uint256 tokenId, bool started) external;
 
-    function getEndBlock(uint256 tokenId) external view returns (uint256);
+    function setHighestBid(
+        uint256 tokenId,
+        uint256 auctionId,
+        uint256 highestBid
+    ) external;
+
+    function setEndBlock(
+        uint256 tokenId,
+        uint256 auctionId,
+        uint256 endBlock
+    ) external;
+
+    function getEndBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
     function setFundsByBidder(
         uint256 tokenId,
+        uint256 auctionId,
         address sender,
         uint256 newBid
     ) external;
 
-    function setHighestBidder(uint256 tokenId, address highestBidder) external;
+    function setHighestBidder(
+        uint256 tokenId,
+        uint256 auctionId,
+        address highestBidder
+    ) external;
 
-    function getHighestBidder(uint256 tokenId) external view returns (address);
+    function getHighestBidder(uint256 tokenId, uint256 auctionId) external view returns (address);
 
     function setOwner(uint256 tokenId, address owner) external;
 
     function getOwner(uint256 tokenId) external view returns (address);
 
-    function addBidder(uint256 tokenId, address bidder) external;
+    function addBidder(uint256 tokenId, uint256 auctionId, address bidder) external;
 
-    function addBid(uint256 tokenId, uint256 bid) external;
+    function addBid(
+        uint256 tokenId,
+        uint256 auctionId,
+        uint256 bid
+    ) external;
 
     function addToken(uint256 tokenId, Token token) external;
 

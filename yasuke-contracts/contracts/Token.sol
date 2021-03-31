@@ -22,9 +22,15 @@ contract Token is ERC721 {
         require(msg.sender == admin, 'Only admin can call this contract');
         _mint(owner, tokenId);    
         allowSpending(tokenId);
-        console.log("Owner of %d: %s", tokenId, ownerOf(tokenId));
         _setTokenURI(tokenId, uri);
         return true;          
+    }
+
+    function changeOwnership(uint tokenId, address from, address to) public returns (bool) {
+        require(msg.sender == admin, 'Only admin can call this contract');        
+        safeTransferFrom(from, to, tokenId);
+        allowSpending(tokenId);
+        return true;
     }
 
     function allowSpending(uint256 tokenId) public {
