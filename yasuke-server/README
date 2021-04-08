@@ -1,0 +1,31 @@
+YASUKE METHODS
+==============
+
+Method Name             | Parameters
+-----------------------------------------------------------------------------------------------------
+issueToken              | tokenId, owner, uri, name, symbol
+startAuction            | tokenId, auctionId, startBlock, endBlock, sellNowPrice, minimumBid
+placeBid                | tokenId, auctionId
+endBid                  | tokenId, auctionId
+withdraw                | tokenId, auctionId
+cancelAuction           | tokenId, auctionId
+
+Variables & Types
+--------------------
+tokenId: int
+auctionId: int
+owner: address | string
+uri: url | string
+name: string
+symbol: string
+startBlock: int 
+endBlock: int
+sellNowPrice: int (18 decimal places)
+minimumBid: int (18 decimal places)
+
+Block Calculations
+------------------------------
+1 Block is 3 secs. To Get Block Number of 3 days time 
+If Current Block Number is 1000,
+3 days = 3 * 24  * 60 * 60 (in secs)
+Block Number in 3 days time = 1000 + (3 * 24  * 60 * 60);

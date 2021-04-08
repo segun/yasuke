@@ -86,3 +86,5 @@ build
 env*
 .env
 *.bak
+ormconfig.json
+migration
