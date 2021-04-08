@@ -16,10 +16,10 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionsFilter());
 
   const options = new DocumentBuilder()
-      .setTitle('Asset Manager API') 
-      .setDescription('API endpoints for Xend Assset Management and Order Matching Platform')
+      .setTitle('Yasuke API') 
+      .setDescription('API endpoints for Yasuke NFT Platform')
       .setVersion('1.0.0')
-      .addTag('asset-manager')      
+      .addTag('yasuke')      
       .addApiKey({
         type: 'apiKey', // this should be apiKey
         name: 'api-key', // this is the name of the key you expect in header

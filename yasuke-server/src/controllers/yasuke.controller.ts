@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
+import { Issuer } from 'src/models/issuer.model';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
 
@@ -25,5 +26,10 @@ export class YasukeController {
     @Get("/get-contract-addres")
     async getContractAddress(): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.configService.get<string>('CONTRACT_ADDRESS'));
+    }
+
+    @Post('/save-issuer')
+    async saveIssuer(@Body() issuer: Issuer): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.saveIssuer(issuer));
     }
 }

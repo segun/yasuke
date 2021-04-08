@@ -2,6 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AuctionInfo, TokenInfo } from 'src/models/entities.model';
 import { Contract, ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Issuer } from 'src/models/issuer.model';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -15,6 +18,10 @@ export class YasukeService {
     yasukeAbi: string;
     webProvider: string;
 
+    @InjectRepository(Issuer)
+    private issuerRepository: Repository<Issuer>
+
+
     private readonly logger = new Logger(YasukeService.name);
 
     constructor(private configService: ConfigService) {
@@ -24,7 +31,40 @@ export class YasukeService {
         this.yasukeAbi = JSON.parse(fs.readFileSync(path.resolve('src/abis/Yasuke.json'), 'utf8')).abi;
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
 
-        this.getAuctionInfo(1,1);
+        this.getAuctionInfo(1, 1);
+    }
+
+    async saveIssuer(issuer: Issuer): Promise<Issuer> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dbIssuer = await this.issuerRepository.createQueryBuilder("issuer")
+                    .where("blockchainAddress = :bad", { bad: issuer.blockchainAddress })
+                    .getOne();
+                if (dbIssuer !== undefined) {
+                    reject("Issuer with blockchain address already exists");
+                }
+
+                dbIssuer = await this.issuerRepository.createQueryBuilder("issuer")
+                    .where("phoneNumber = :bad", { bad: issuer.phoneNumber })
+                    .getOne();
+                if (dbIssuer !== undefined) {
+                    reject("Issuer with phone number already exists");
+                }
+
+                dbIssuer = await this.issuerRepository.createQueryBuilder("issuer")
+                    .where("email = :bad", { bad: issuer.email })
+                    .getOne();
+                if (dbIssuer !== undefined) {
+                    reject("Issuer with email already exists");
+                }
+
+                dbIssuer = await this.issuerRepository.save(issuer);
+
+                resolve(dbIssuer);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     async getTokenInfo(tokenId: number): Promise<TokenInfo> {
@@ -40,7 +80,7 @@ export class YasukeService {
                 this.logger.debug(tokenInfo);
                 resolve(tokenInfo);
             } catch (error) {
-                if(error.reason === 'TINF') {
+                if (error.reason === 'TINF') {
                     reject(`Token with id ${tokenId} not found`);
                 } else {
                     reject(error);
@@ -69,12 +109,12 @@ export class YasukeService {
                 this.logger.debug(auctionInfo);
                 resolve(auctionInfo);
             } catch (error) {
-                if(error.reason === 'TINF') {
+                if (error.reason === 'TINF') {
                     reject(`Token with id ${tokenId} not found`);
                 } else {
                     reject(error);
                 }
             }
         });
-    }    
+    }
 }
