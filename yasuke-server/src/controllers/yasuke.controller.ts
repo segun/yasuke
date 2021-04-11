@@ -32,4 +32,9 @@ export class YasukeController {
     async saveIssuer(@Body() issuer: Issuer): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.saveIssuer(issuer));
     }
+
+    @Post('issue-token/:tokenId')
+    async issueToken(@Param("tokenId") tokenId: number): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(tokenId));
+    }
 }

@@ -1,4 +1,5 @@
 export class Utils {
+    public static address0 = "0x0000000000000000000000000000000000000000";
     public static getRndInteger(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     }

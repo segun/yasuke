@@ -10,7 +10,7 @@ endBid                  | tokenId, auctionId
 withdraw                | tokenId, auctionId
 cancelAuction           | tokenId, auctionId
 
-Variables & Types
+Client Side Variables & Types
 --------------------
 tokenId: int
 auctionId: int
@@ -29,3 +29,42 @@ Block Calculations
 If Current Block Number is 1000,
 3 days = 3 * 24  * 60 * 60 (in secs)
 Block Number in 3 days time = 1000 + (3 * 24  * 60 * 60);
+
+Metamask Integration
+---------------------------------
+1. issueToken
+      abi = [
+        "function issueToken(uint256,address,string,string,string)",
+        "function startAuction(uint256,uint256,uint256,uint256,uint256,uint256)",
+        "function placeBid(uint256,uint256)",
+        "function endBid(uint256,uint256)",
+        "function withdraw(uint256,uint256)",
+        "function cancelAuction(uint256,uint256)"
+  ];
+
+2. yFace = new ethers.utils.Interface(this.abi);
+
+3. placeBid Example
+
+    const data: string = this.iFace.encodeFunctionData("placeBid", [tokenId, auctionId]);
+    const ethValue = "5"; // 5 BNB
+
+    const transactionParameters = {
+      nonce: '0x00', // ignored by MetaMask
+      //gasPrice: '0x37E11D600', // customizable by user during MetaMask confirmation.
+      //gas: '0x12C07', // customizable by user during MetaMask confirmation.
+      to: this.contractAddress, // Required except during contract publications.
+      from: this.ethereum.selectedAddress, // must match user's active address.
+      value: ethers.utils.parseEther(ethValue).toHexString(),
+      data: data,
+      chainId: this.chainId, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+    };
+
+    // txHash is a hex string
+    // As with any RPC call, it may throw an error
+    console.log(transactionParameters);
+    this.ethereum.request({ method: 'eth_sendTransaction', params: [transactionParameters], }).then((txHash: string) => {
+      console.log(txHash);
+    }, (error: any) => {
+      // do something with error
+    });

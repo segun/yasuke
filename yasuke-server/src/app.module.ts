@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { YasukeController } from './controllers/yasuke.controller';
 import { AuthGuard } from './guards/auth.guard';
+import { TokenInfo } from './models/entities.model';
 import { Issuer } from './models/issuer.model';
 import { YasukeService } from './services/yasuke.service';
 
@@ -11,7 +12,7 @@ import { YasukeService } from './services/yasuke.service';
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot(),
-    TypeOrmModule.forFeature([Issuer]),    
+    TypeOrmModule.forFeature([Issuer, TokenInfo]),    
   ],
   controllers: [YasukeController],
   providers: [

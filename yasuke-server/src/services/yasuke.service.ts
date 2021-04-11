@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Issuer } from 'src/models/issuer.model';
+import { Utils } from 'src/utils';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -19,7 +20,9 @@ export class YasukeService {
     webProvider: string;
 
     @InjectRepository(Issuer)
-    private issuerRepository: Repository<Issuer>
+    private issuerRepository: Repository<Issuer>;
+    @InjectRepository(TokenInfo)
+    private tokenInfoRepository: Repository<TokenInfo>;
 
 
     private readonly logger = new Logger(YasukeService.name);
@@ -32,6 +35,36 @@ export class YasukeService {
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
 
         this.getAuctionInfo(1, 1);
+    }
+
+    async issueToken(tokenId: number): Promise<TokenInfo> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
+                    .where("tokenId = :tid", { tid: tokenId })
+                    .getOne();
+
+                if (dbToken !== undefined) {
+                    reject("tokenId already exists");
+                }
+
+                dbToken = await this.getTokenInfo(tokenId);
+
+                if(dbToken.contractAddress === Utils.address0) {
+                    //reject("Token ID not found on the blockchain");
+                }
+
+                if(dbToken.owner === Utils.address0) {
+                    //reject("Token Owner not found on the blockchain");
+                }                
+
+                dbToken = await this.tokenInfoRepository.save(dbToken);
+
+                resolve(dbToken);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     async saveIssuer(issuer: Issuer): Promise<Issuer> {
