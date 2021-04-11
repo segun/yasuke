@@ -29,7 +29,7 @@ contract Storage is StorageInterface {
         if (admin == address(0)) {
             admin = _admin;
         } else {
-            console.log("Sender: %s, Admin: %s", msg.sender, admin);
+            console.log('Sender: %s, Admin: %s', msg.sender, admin);
             require(msg.sender == admin, "You can't do that");
             admin = _admin;
         }
@@ -159,6 +159,10 @@ contract Storage is StorageInterface {
         bids[tokenId][auctionId].push(bid);
     }
 
+    function getBids(uint256 tokenId, uint256 auctionId) public view override returns (uint256[] memory) {
+        return bids[tokenId][auctionId];
+    }
+
     function getOwner(uint256 tokenId) public view override returns (address) {
         return owner[tokenId];
     }
@@ -196,13 +200,10 @@ contract Storage is StorageInterface {
         inAuction[tokenId] = _started;
     }
 
-    function setInAuction(
-        uint256 tokenId,
-        bool _inAuction
-    ) public override {
+    function setInAuction(uint256 tokenId, bool _inAuction) public override {
         require(msg.sender == admin, "You can't do that");
         inAuction[tokenId] = _inAuction;
-    }    
+    }
 
     function isInAuction(uint256 tokenId) public view override returns (bool) {
         return inAuction[tokenId];

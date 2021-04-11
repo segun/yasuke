@@ -76,13 +76,19 @@ interface StorageInterface {
 
     function getOwner(uint256 tokenId) external view returns (address);
 
-    function addBidder(uint256 tokenId, uint256 auctionId, address bidder) external;
+    function addBidder(
+        uint256 tokenId,
+        uint256 auctionId,
+        address bidder
+    ) external;
 
     function addBid(
         uint256 tokenId,
         uint256 auctionId,
         uint256 bid
     ) external;
+
+    function getBids(uint256 tokenId, uint256 auctionId) external view returns (uint256[] memory);
 
     function addToken(uint256 tokenId, Token token) external;
 

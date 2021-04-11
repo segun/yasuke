@@ -159,8 +159,10 @@ contract Yasuke is YasukeInterface {
         emit LogWithdrawal(msg.sender, withdrawalAccount, withdrawalAmount);
     }
 
+    // TODO: Check if there are no bids before cancelling.
     function cancelAuction(uint256 tokenId, uint256 auctionId) public override {
         shouldBeStarted(tokenId, auctionId);
+        require(store.getBids(tokenId, auctionId).length > 0);
         store.setCancelled(tokenId, auctionId, true);
         emit LogCanceled();
     }
