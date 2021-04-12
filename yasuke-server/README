@@ -25,14 +25,18 @@ minimumBid: int (18 decimal places)
 
 Block Calculations
 ------------------------------
-1 Block is 3 secs. To Get Block Number of 3 days time 
+1 Block is 3 secs. 
+To Get Block Number in 7 days time 
 If Current Block Number is 1000,
-3 days = 3 * 24  * 60 * 60 (in secs)
-Block Number in 3 days time = 1000 + (3 * 24  * 60 * 60);
+7 days = 7 * 24  * 60 * 60 (in secs)
+Block Number in 7 days time = 1000 + ((7 * 24  * 60 * 60)/3);
+
+startBlock = 202,600
+endBlock = uses the same logic, but different days (e.g end  block can be in 21 days, which  means 7 above becomes 21)
 
 Metamask Integration
 ---------------------------------
-1. issueToken
+1. placeBid
       abi = [
         "function issueToken(uint256,address,string,string,string)",
         "function startAuction(uint256,uint256,uint256,uint256,uint256,uint256)",
@@ -46,8 +50,11 @@ Metamask Integration
 
 3. placeBid Example
 
-    const data: string = this.iFace.encodeFunctionData("placeBid", [tokenId, auctionId]);
-    const ethValue = "5"; // 5 BNB
+    // Binance Mainnet Chain ID: 56
+    // Binance Testnet Chain ID: 97
+
+    const data: string = this.yFace.encodeFunctionData("placeBid", [tokenId, auctionId]);
+    const ethValue = "100"; // 5 BNB
 
     const transactionParameters = {
       nonce: '0x00', // ignored by MetaMask
@@ -68,3 +75,18 @@ Metamask Integration
     }, (error: any) => {
       // do something with error
     });
+
+
+    Making Sure correct chain id is selected
+    -----------------------------------------
+
+    this.ethereum.request({ method: 'eth_chainId' }).then((chainId: string) => {
+        console.log(`Metamask Chain ID: ${+chainId}`);
+        console.log(`Chain ID We want: ${+this.chainId}`);
+        if (+this.chainId === +chainId) {
+          this.account = accounts[0];
+          this.noMetaMask = false;
+        } else {
+          this.account = "Connect Metamask";
+          this.noMetaMask = true;
+        }
