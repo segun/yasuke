@@ -1,6 +1,7 @@
 async function main() {
 
-    const [deployer] = await ethers.getSigners();
+    const signers = await ethers.getSigners();
+    const deployer = signers[0];
 
     console.log(
         "Deploying contracts with the account:",
@@ -9,15 +10,16 @@ async function main() {
 
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    const Yasuke = await ethers.getContractFactory("Yasuke");
+    const Yasuke = await ethers.getContractFactory("Yasuke", deployer);
     
     // TODO: enter store address in the constructor
-    yasuke = await Yasuke.deploy('0x973141E3E8F4B1429FE847c1348693062b208C2f');
+    yasuke = await Yasuke.deploy('0x59F62AcB42248D660AC5Df1E5a805EbfA0a590d2');
 
     await yasuke.deployed();
-    console.log("YASUKE deployed to:", yasuke.address);
-    
-    console.log("Token address:", token.address);
+    console.log("YASUKE deployed to:", yasuke.address);    
+
+    const a = await yasuke.testUpgrade();
+    console.log(`Upgrade Successful with ${a}`);
 }
 
 main()

@@ -16,16 +16,15 @@ contract Yasuke is YasukeInterface {
     StorageInterface internal store;
 
     constructor(address storeAddress) {
-        console.log("New Contract: %s", address(this));
         minter = msg.sender;
         store = StorageInterface(storeAddress);
-        store.setAdmin(address(this));
+        console.log("Calling Set Admin");
+        store.setAdmin(address(this), msg.sender);        
     }
 
-    function upgrade(address newYasuke) public {
-        console.log("Sender: %s, Minter: %s", msg.sender, minter);
-        require(msg.sender == minter);
-        store.setAdmin(newYasuke);
+    function testUpgrade() public view returns (address, address) {
+        require(store.echo(), 'UF');
+        return (store.getAdmin(), store.getParent());
     }
 
     function startAuction(
@@ -51,8 +50,8 @@ contract Yasuke is YasukeInterface {
         string memory _uri,
         string memory _name,
         string memory _symbol
-    ) public override {
-        //require(msg.sender == minter, 'NAM');
+    ) public override payable {
+
         Token t = new Token(owner, _uri, _name, _symbol);
         require(t.mint(tokenId), 'MF');
         store.addToken(tokenId, t);

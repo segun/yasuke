@@ -5,7 +5,7 @@ import '../library/models.sol';
 import '../Token.sol';
 
 interface StorageInterface {
-    function setAdmin(address _admin) external;
+    function setAdmin(address _admin, address parent) external;
 
     function startAuction(Models.AuctionInfo memory ai) external;
 
@@ -93,4 +93,14 @@ interface StorageInterface {
     function addToken(uint256 tokenId, Token token) external;
 
     function getToken(uint256 tokenId) external view returns (Token);
+
+    function setIssueFee(uint256 issueFee) external;
+
+    function getIssueFee() external view returns (uint256);
+
+    function echo() external view returns (bool);
+
+    function getParent() external view returns (address);
+
+    function getAdmin() external view returns (address);
 }

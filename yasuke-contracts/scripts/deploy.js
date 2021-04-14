@@ -1,6 +1,7 @@
 async function main() {
 
-    const [deployer] = await ethers.getSigners();
+    const signers = await ethers.getSigners();
+    const deployer = signers[0];
 
     console.log(
         "Deploying contracts with the account:",
@@ -18,6 +19,8 @@ async function main() {
     yasuke = await Yasuke.deploy(store.address);
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);
+    const a = await yasuke.testUpgrade();
+    console.log(`Upgrade Successful with ${a}`);
 }
 
 main()

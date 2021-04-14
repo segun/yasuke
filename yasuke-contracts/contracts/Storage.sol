@@ -25,13 +25,41 @@ contract Storage is StorageInterface {
 
     address internal admin = address(0);
 
-    function setAdmin(address _admin) public override {
-        if (admin == address(0)) {
+    address internal parent = address(0);
+
+    uint256 internal issueFee = 0.001 ether;
+
+    function setIssueFee(uint256 _issueFee) public override {
+        require(msg.sender == admin, "You can't do that");
+        issueFee = _issueFee;
+    }
+
+    function getIssueFee() public view override returns (uint256) {
+        return issueFee;
+    }
+
+    function echo() public view override returns (bool) {
+        console.log('2. Sender: %s, Admin: %s, Parent: %s', msg.sender, admin, parent);
+        require(msg.sender == admin, "You can't do that");
+        return true;
+    }
+
+    function getParent() public view override returns (address) {
+        return parent;
+    }
+
+    function getAdmin() public view override returns (address) {
+        return admin;
+    }
+
+    function setAdmin(address _admin, address _parent) public override {
+        if (admin == address(0) && parent == address(0)) {
+            parent = _parent;
             admin = _admin;
+        } else if(parent == _parent) {
+            admin = _admin;            
         } else {
-            console.log('Sender: %s, Admin: %s', msg.sender, admin);
-            require(msg.sender == admin, "You can't do that");
-            admin = _admin;
+            revert('OACDT');
         }
     }
 
