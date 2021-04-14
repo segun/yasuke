@@ -63,6 +63,12 @@ export class YasukeService {
         });
     }
 
+    async listAuctionsByTokenId(options: IPaginationOptions, tokenId: number): Promise<Pagination<AuctionInfo>> {
+        const qb = this.auctionInfoRepository.createQueryBuilder("auctionInfo")
+            .where("tokenId = :tid", {tid: tokenId});
+        return paginate<AuctionInfo>(qb, options);
+    }    
+
     async issueToken(tokenId: number): Promise<TokenInfo> {
         return new Promise(async (resolve, reject) => {
             try {

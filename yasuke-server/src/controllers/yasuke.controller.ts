@@ -72,4 +72,13 @@ export class YasukeController {
     async startAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.startAuction(auctionId, tokenId));
     }
+
+    @Get('list-auctions/by-token-id/:tokenId')
+    async listAuctionsByTokenId(@Query('page') page: number, @Query('limit') limit: number, @Param("tokenId") tokenId: number): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.listAuctionsByTokenId({
+            page,
+            limit,
+            route: '/v3/assets',
+        }, tokenId));
+    }    
 }
