@@ -52,7 +52,7 @@ contract Yasuke is YasukeInterface {
         string memory _name,
         string memory _symbol
     ) public override {
-        require(msg.sender == minter, 'NAM');
+        //require(msg.sender == minter, 'NAM');
         Token t = new Token(owner, _uri, _name, _symbol);
         require(t.mint(tokenId), 'MF');
         store.addToken(tokenId, t);
