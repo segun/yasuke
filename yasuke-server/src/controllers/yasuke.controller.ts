@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -41,5 +41,35 @@ export class YasukeController {
     @ApiSecurity('api-key')
     async issueToken(@Param("tokenId") tokenId: number): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(tokenId));
+    }
+
+    @Get('list-tokens')
+    async listTokens(@Query('page') page: number, @Query('limit') limit: number): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.listTokens({
+            page,
+            limit,
+            route: '/v3/assets',
+        }));
+    }
+
+    @Get('list-tokens/by-owner/:owner')
+    async listTokensByOwner(@Query('page') page: number, @Query('limit') limit: number, @Param("owner") owner: string): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.listTokensByOwner({
+            page,
+            limit,
+            route: '/v3/assets',
+        }, owner));
+    }
+
+    @Get('get-token/:tokenId')
+    async getToken(@Param("tokenId") tokenId: number): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.getToken(tokenId));
+    }
+
+    @Post('start-auction/:auctionId/:tokenId')
+    @Roles("api")
+    @ApiSecurity('api-key')
+    async startAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.startAuction(auctionId, tokenId));
     }
 }
