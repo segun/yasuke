@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/roles.decorator';
 import { Issuer } from 'src/models/issuer.model';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
@@ -29,11 +30,15 @@ export class YasukeController {
     }
 
     @Post('/save-issuer')
+    @Roles("api")
+    @ApiSecurity('api-key')
     async saveIssuer(@Body() issuer: Issuer): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.saveIssuer(issuer));
     }
 
     @Post('issue-token/:tokenId')
+    @Roles("api")
+    @ApiSecurity('api-key')
     async issueToken(@Param("tokenId") tokenId: number): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(tokenId));
     }

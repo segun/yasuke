@@ -105,7 +105,7 @@ export class YasukeService {
             try {
                 const ti = await this.yasukeContract.getTokenInfo(tokenId);
                 const tokenInfo: TokenInfo = {
-                    tokenId: ti[0],
+                    tokenId: ti[0].toNumber(),
                     owner: ti[1],
                     contractAddress: ti[2]
                 }

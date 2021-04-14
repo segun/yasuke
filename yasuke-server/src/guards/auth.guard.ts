@@ -11,7 +11,13 @@ export class AuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
-    const authHeader = context.switchToHttp().getRequest().headers['api-key'];
+    let  authHeader = context.switchToHttp().getRequest().headers['apiKey'];
+    if(authHeader === undefined) {
+      authHeader = context.switchToHttp().getRequest().headers['apikey'];
+    }
+    if(authHeader === undefined) {
+      authHeader = context.switchToHttp().getRequest().headers['api-key'];
+    }    
     if (!roles) {
       return true;
     } else {
@@ -21,6 +27,7 @@ export class AuthGuard implements CanActivate {
 
   matchRoles(roles: string[], handler: string, authHeader: string): boolean {
     let decrypted = "";
+    this.logger.log(`authHeader: ${authHeader}`);
     this.logger.log(`roles: ${roles}`);
     if (authHeader !== undefined) {
       decrypted = AES.decrypt(authHeader, process.env.KEY).toString(enc.Utf8);
@@ -29,8 +36,12 @@ export class AuthGuard implements CanActivate {
     if (roles.indexOf('all') >= 0) {
       return true;
     }
-    
+
     if (roles.indexOf('admin') >= 0) {
+      return decrypted === process.env.AUTH_TOKEN;
+    }
+
+    if (roles.indexOf('api') >= 0) {
       return decrypted === process.env.AUTH_TOKEN;
     }
 
