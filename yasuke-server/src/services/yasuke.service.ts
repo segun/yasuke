@@ -67,6 +67,25 @@ export class YasukeService {
         const qb = this.auctionInfoRepository.createQueryBuilder("auctionInfo")
             .where("tokenId = :tid", {tid: tokenId});
         return paginate<AuctionInfo>(qb, options);
+    }
+    
+    async getAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dbAuction = await this.auctionInfoRepository.createQueryBuilder("auctionInfo")
+                    .where("tokenId = :tid", { tid: tokenId })
+                    .andWhere("auctionId = :aid", { aid: auctionId })
+                    .getOne();
+
+                if (dbAuction === undefined) {
+                    reject('Auction for Token not found');
+                }
+
+                resolve(dbAuction);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }    
 
     async issueToken(tokenId: number): Promise<TokenInfo> {
