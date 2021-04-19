@@ -169,7 +169,7 @@ contract Yasuke is YasukeInterface {
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
-        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), address(t));
+        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t));
         return a;
     }
 

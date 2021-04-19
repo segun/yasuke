@@ -6,6 +6,7 @@ library Models {
     struct Asset {
         uint256 tokenId;
         address owner;
+        address issuer;
         address contractAddress;
     }
 

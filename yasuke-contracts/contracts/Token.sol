@@ -8,6 +8,7 @@ import './library/console.sol';
 
 contract Token is ERC721 {
     address internal owner;
+    address internal issuer;
     address internal admin;
     string internal uri;
 
@@ -15,6 +16,7 @@ contract Token is ERC721 {
     constructor(address _owner, string memory _uri, string memory _name, string memory _symbol) ERC721(_name, _symbol) {
         uri = _uri;
         owner = _owner; 
+        issuer = _owner;
         admin = msg.sender;
     }
 
@@ -30,11 +32,16 @@ contract Token is ERC721 {
         require(msg.sender == admin, 'Only admin can call this contract');        
         safeTransferFrom(from, to, tokenId);
         allowSpending(tokenId);
+        owner = to;
         return true;
     }
 
     function allowSpending(uint256 tokenId) public {
         require(msg.sender == admin, 'Only admin can call this contract');        
         _approve(msg.sender, tokenId);
+    }
+
+    function getIssuer() public view returns (address) {
+        return issuer;
     }
 }
