@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
-import { Column, Entity, Index, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 
 @Entity("tokenInfo")
 @Unique("token_info_idx", ["tokenId", "contractAddress"])
@@ -9,22 +9,23 @@ export class TokenInfo {
     id?: number;    
 
     @Index("tokenId-idx") 
-    @ApiProperty()
-    @IsNotEmpty()
     @Column()
     tokenId: number;
 
     @Index("owner-idx") 
-    @ApiProperty()
-    @IsNotEmpty()
     @Column()    
     owner: string;
 
+    @Column()    
+    @Index("issuer-idx") 
+    issuer: string;
+
     @Index("contract-idx") 
-    @ApiProperty()
-    @IsNotEmpty()
     @Column()    
     contractAddress: string;
+
+    @OneToMany(() => Media, media => media.tokenInfo)
+    media: Media[];        
 }
 
 @Entity("auctionInfo")
@@ -34,53 +35,62 @@ export class AuctionInfo {
     id?: number;    
 
     @Index("auctionId-idx") 
-    @ApiProperty()
-    @IsNotEmpty()
     @Column()
     auctionId: number;
 
+    @Column()
+    tokenId: number;
+
+    @Column()
+    owner: string;
+
+    @Column()    
+    startBlock: number;
+
+    @Column()    
+    endBlock: number;
+
+    @Column()    
+    sellNowPrice: number;
+
+    @Column()    
+    highestBidder: string;
+
+    @Column()    
+    highestBid: number;
+
+    @Column()    
+    cancelled: boolean;
+
+    @Column()    
+    minimumBid: number;
+}
+
+@Entity("media")
+export class Media {
+    @PrimaryGeneratedColumn()
+    id?: number;    
+
+    @Column()
+    key: string;        
+
+    @Column()
+    media: string;        
+
+    @ManyToOne(() => TokenInfo, tokenInfo => tokenInfo.media)
+    tokenInfo: TokenInfo;
+}
+
+export class IssueToken {
     @ApiProperty()
     @IsNotEmpty()
-    @Column()
     tokenId: number;
 
     @ApiProperty()
     @IsNotEmpty()
-    @Column()
-    owner: string;
+    medias: string[];
 
     @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    startBlock: number;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    endBlock: number;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    sellNowPrice: number;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    highestBidder: string;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    highestBid: number;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    cancelled: boolean;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @Column()    
-    minimumBid: number;
+    @IsNotEmpty()    
+    keys: string[];            
 }

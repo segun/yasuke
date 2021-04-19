@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AuctionInfo, TokenInfo } from 'src/models/entities.model';
+import { AuctionInfo, IssueToken, Media, TokenInfo } from 'src/models/entities.model';
 import { Contract, ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Issuer } from 'src/models/issuer.model';
 import { Utils } from 'src/utils';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { ImageService } from './image.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -20,6 +21,8 @@ export class YasukeService {
     yasukeAbi: string;
     webProvider: string;
 
+    @InjectRepository(Media)
+    private mediaRepository: Repository<Media>;
     @InjectRepository(Issuer)
     private issuerRepository: Repository<Issuer>;
     @InjectRepository(TokenInfo)
@@ -30,7 +33,10 @@ export class YasukeService {
 
     private readonly logger = new Logger(YasukeService.name);
 
-    constructor(private configService: ConfigService) {
+    constructor(
+        private configService: ConfigService,
+        private imageService: ImageService
+    ) {
         this.webProvider = this.configService.get<string>('WEB3_PROVIDER');
         this.yasukeAddress = this.configService.get<string>('CONTRACT_ADDRESS');
         this.provider = new ethers.providers.JsonRpcProvider(this.webProvider);
@@ -65,10 +71,10 @@ export class YasukeService {
 
     async listAuctionsByTokenId(options: IPaginationOptions, tokenId: number): Promise<Pagination<AuctionInfo>> {
         const qb = this.auctionInfoRepository.createQueryBuilder("auctionInfo")
-            .where("tokenId = :tid", {tid: tokenId});
+            .where("tokenId = :tid", { tid: tokenId });
         return paginate<AuctionInfo>(qb, options);
     }
-    
+
     async getAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
         return new Promise(async (resolve, reject) => {
             try {
@@ -86,24 +92,57 @@ export class YasukeService {
                 reject(error);
             }
         });
-    }    
+    }
 
-    async issueToken(tokenId: number): Promise<TokenInfo> {
+    async issueToken(issueToken: IssueToken): Promise<TokenInfo> {
         return new Promise(async (resolve, reject) => {
             try {
                 let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
-                    .where("tokenId = :tid", { tid: tokenId })
-                    .getOne();
+                    .where("tokenId = :tid", { tid: issueToken.tokenId })
+                    .getOne()
 
                 if (dbToken !== undefined) {
                     reject("tokenId already exists");
                 }
 
-                dbToken = await this.getTokenInfo(tokenId);
-
+                dbToken = await this.getTokenInfo(issueToken.tokenId);
                 dbToken = await this.tokenInfoRepository.save(dbToken);
 
-                resolve(dbToken);
+                // now let's save the images                
+                let medias: Media[] = [];
+
+                if (issueToken.keys.length === issueToken.medias.length) {
+                    let count = 0;
+                    for (let key of issueToken.keys) {
+                        let dbMedia: Media = await this.mediaRepository.createQueryBuilder("media")
+                            .where("tokenId = :tid", { tid: issueToken.tokenId })
+                            .andWhere("key = :key", { key: key })
+                            .andWhere("tokenInfoId = :tiid", { tiid: issueToken.tokenId })
+                            .getOne();
+
+                        if (dbMedia === undefined) {
+                            const imageUrl: string = await this.imageService.uploadAssetImage(issueToken.medias[count]);
+                            dbMedia = {
+                                tokenInfo: dbToken,
+                                key: key,
+                                media: imageUrl
+                            }
+
+                            medias.push(dbMedia);
+                            await this.mediaRepository.save(dbMedia);
+                        } else {
+                            medias.push(dbMedia);
+                            this.logger.debug(`Media Already Exists for tokenId and Key: [${issueToken.tokenId} -> ${key}]`);
+                        }
+                        count++;
+                    }
+
+                    dbToken.media = medias;
+                    dbToken = await this.tokenInfoRepository.save(dbToken);
+                    resolve(dbToken);
+                } else {
+                    reject("Keys and Medias not the same length");
+                }
             } catch (error) {
                 reject(error);
             }
@@ -178,7 +217,9 @@ export class YasukeService {
                 const tokenInfo: TokenInfo = {
                     tokenId: ti[0].toNumber(),
                     owner: ti[1],
-                    contractAddress: ti[2]
+                    issuer: ti[2],
+                    contractAddress: ti[3],
+                    media: []
                 }
 
                 this.logger.debug(tokenInfo);

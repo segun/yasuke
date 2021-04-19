@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
-import { Column, Index, Entity, Unique, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Index, Entity, Unique, PrimaryGeneratedColumn, OneToMany, ManyToOne } from "typeorm";
 
 @Entity("issuer")
 @Unique("issuer_idx", ["email", "phoneNumber", "blockchainAddress"])
@@ -39,5 +39,5 @@ export class Issuer {
     @ApiProperty()
     @IsNotEmpty()
     @Column()
-    blockchainAddress: string;    
+    blockchainAddress: string;       
 }

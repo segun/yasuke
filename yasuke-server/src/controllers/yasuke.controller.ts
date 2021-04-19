@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
+import { IssueToken } from 'src/models/entities.model';
 import { Issuer } from 'src/models/issuer.model';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
@@ -36,11 +37,11 @@ export class YasukeController {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.saveIssuer(issuer));
     }
 
-    @Post('issue-token/:tokenId')
+    @Post('issue-token/')
     @Roles("api")
     @ApiSecurity('api-key')
-    async issueToken(@Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(tokenId));
+    async issueToken(@Body() issueToken: IssueToken): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(issueToken));
     }
 
     @Get('list-tokens')

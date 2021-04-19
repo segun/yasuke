@@ -33,6 +33,7 @@
     "@nestjs/swagger": "^4.8.0",
     "@nestjs/typeorm": "^7.1.5",
     "class-validator": "^0.13.1",
+    "cloudinary": "^1.25.1",
     "crypto-js": "^4.0.0",
     "ethers": "^5.1.0",
     "mysql": "^2.18.1",
