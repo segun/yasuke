@@ -72,7 +72,7 @@ export class Media {
     id?: number;    
 
     @Column()
-    key: string;        
+    mediaKey: string;        
 
     @Column()
     media: string;        

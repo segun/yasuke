@@ -42,8 +42,6 @@ export class YasukeService {
         this.provider = new ethers.providers.JsonRpcProvider(this.webProvider);
         this.yasukeAbi = JSON.parse(fs.readFileSync(path.resolve('src/abis/Yasuke.json'), 'utf8')).abi;
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
-
-        this.getAuctionInfo(1, 1);
     }
 
     async startAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
@@ -106,6 +104,8 @@ export class YasukeService {
                 }
 
                 dbToken = await this.getTokenInfo(issueToken.tokenId);
+                this.logger.debug('Token From Blockchain');
+                this.logger.debug(dbToken);
                 dbToken = await this.tokenInfoRepository.save(dbToken);
 
                 // now let's save the images                
@@ -115,8 +115,7 @@ export class YasukeService {
                     let count = 0;
                     for (let key of issueToken.keys) {
                         let dbMedia: Media = await this.mediaRepository.createQueryBuilder("media")
-                            .where("tokenId = :tid", { tid: issueToken.tokenId })
-                            .andWhere("key = :key", { key: key })
+                            .where("mediaKey = :key", { key: key })
                             .andWhere("tokenInfoId = :tiid", { tiid: issueToken.tokenId })
                             .getOne();
 
@@ -124,12 +123,13 @@ export class YasukeService {
                             const imageUrl: string = await this.imageService.uploadAssetImage(issueToken.medias[count]);
                             dbMedia = {
                                 tokenInfo: dbToken,
-                                key: key,
+                                mediaKey: key,
                                 media: imageUrl
                             }
 
-                            medias.push(dbMedia);
                             await this.mediaRepository.save(dbMedia);
+                            dbMedia.tokenInfo = undefined;
+                            medias.push(dbMedia);                            
                         } else {
                             medias.push(dbMedia);
                             this.logger.debug(`Media Already Exists for tokenId and Key: [${issueToken.tokenId} -> ${key}]`);
@@ -214,6 +214,8 @@ export class YasukeService {
         return new Promise(async (resolve, reject) => {
             try {
                 const ti = await this.yasukeContract.getTokenInfo(tokenId);
+                this.logger.debug('Token from Blockchain - 1');
+                this.logger.debug(ti);
                 const tokenInfo: TokenInfo = {
                     tokenId: ti[0].toNumber(),
                     owner: ti[1],
