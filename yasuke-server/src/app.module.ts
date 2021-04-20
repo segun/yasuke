@@ -6,6 +6,7 @@ import { YasukeController } from './controllers/yasuke.controller';
 import { AuthGuard } from './guards/auth.guard';
 import { AuctionInfo, TokenInfo } from './models/entities.model';
 import { Issuer } from './models/issuer.model';
+import { ImageService } from './services/image.service';
 import { YasukeService } from './services/yasuke.service';
 
 @Module({
@@ -20,7 +21,8 @@ import { YasukeService } from './services/yasuke.service';
       provide: APP_GUARD,
       useClass: AuthGuard
     },
-    YasukeService
+    YasukeService,
+    ImageService,
   ],
 })
 export class AppModule {}
