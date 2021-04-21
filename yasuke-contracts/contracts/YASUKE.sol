@@ -9,6 +9,7 @@ import './library/models.sol';
 import './interfaces/StorageInterface.sol';
 import './interfaces/YasukeInterface.sol';
 
+// TODO: Calculate Fees
 contract Yasuke is YasukeInterface {
     using SafeMath for uint256;
     address internal minter;

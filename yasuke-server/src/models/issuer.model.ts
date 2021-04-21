@@ -40,4 +40,7 @@ export class Issuer {
     @IsNotEmpty()
     @Column()
     blockchainAddress: string;   
+
+    @Column()
+    enabled: boolean;
 }

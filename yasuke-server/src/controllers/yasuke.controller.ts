@@ -41,6 +41,11 @@ export class YasukeController {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.saveIssuer(issuer));
     }
 
+    @Get('is-issuer/:address')
+    async isIssuer(@Param("address") address: string): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.isIssuer(address));
+    }
+
     @Post('issue-token/')
     @Roles("api")
     @ApiSecurity('api-key')

@@ -43,6 +43,25 @@ export class YasukeService {
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
     }
 
+    async isIssuer(address: string): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dbIssuer = await this.issuerRepository.createQueryBuilder("issuer")
+                    .where("blockchainAddress = :bad", { bad: address })
+                    .getOne();
+                if (dbIssuer === undefined) {
+                    reject("Issuer with blockchain address not found");
+                }
+
+                if (!dbIssuer.enabled) {
+                    reject("Issuer with blockchain address has been blocked");
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
     async saveIssuer(issuer: Issuer): Promise<Issuer> {
         return new Promise(async (resolve, reject) => {
             try {
