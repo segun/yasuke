@@ -15,7 +15,7 @@ import { AuctionService } from './services/auction.service';
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot(),
-    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media, Bid]),    
+    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media]),    
   ],
   controllers: [YasukeController],
   providers: [
