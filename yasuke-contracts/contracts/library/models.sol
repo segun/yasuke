@@ -8,6 +8,8 @@ library Models {
         address owner;
         address issuer;
         address contractAddress;
+        string symbol;
+        string name;
     }
 
     struct AuctionInfo {
@@ -21,5 +23,7 @@ library Models {
         uint256 highestBid;
         bool cancelled;
         uint256 minimumBid;
+        address[] bidders;
+        uint256[] bids;
     }
 }

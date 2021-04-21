@@ -40,7 +40,20 @@ contract Yasuke is YasukeInterface {
         require(!store.isInAuction(tokenId), 'AIP');
         require(!store.isStarted(tokenId, auctionId), 'AAS');
         Models.AuctionInfo memory ai =
-            Models.AuctionInfo(auctionId, tokenId, msg.sender, startBlock, endBlock, sellNowPrice, address(0), 0, false, minimumBid);
+            Models.AuctionInfo(
+                auctionId, 
+                tokenId, 
+                msg.sender, 
+                startBlock, 
+                endBlock, 
+                sellNowPrice, 
+                address(0), 
+                0, 
+                false, 
+                minimumBid,
+                store.getBidders(tokenId, auctionId),
+                store.getBids(tokenId, auctionId)
+            );
         store.startAuction(ai);
     }
 
@@ -169,7 +182,14 @@ contract Yasuke is YasukeInterface {
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
-        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t));
+        Models.Asset memory a = Models.Asset(
+            tokenId, 
+            t.ownerOf(tokenId), 
+            t.getIssuer(), 
+            address(t),
+            t.name(),
+            t.symbol()
+        );
         return a;
     }
 

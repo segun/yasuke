@@ -4,16 +4,18 @@ import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { YasukeController } from './controllers/yasuke.controller';
 import { AuthGuard } from './guards/auth.guard';
-import { AuctionInfo, Media, TokenInfo } from './models/entities.model';
+import { AuctionInfo, Bid, Media, TokenInfo } from './models/entities.model';
 import { Issuer } from './models/issuer.model';
 import { ImageService } from './services/image.service';
 import { YasukeService } from './services/yasuke.service';
+import { TokenService } from './services/token.service';
+import { AuctionService } from './services/auction.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot(),
-    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media]),    
+    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media, Bid]),    
   ],
   controllers: [YasukeController],
   providers: [
@@ -23,6 +25,8 @@ import { YasukeService } from './services/yasuke.service';
     },
     YasukeService,
     ImageService,
+    TokenService,
+    AuctionService,
   ],
 })
 export class AppModule {}

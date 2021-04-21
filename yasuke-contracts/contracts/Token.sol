@@ -22,7 +22,7 @@ contract Token is ERC721 {
 
     function mint(uint256 tokenId) public returns (bool) {
         require(msg.sender == admin, 'Only admin can call this contract');
-        _mint(owner, tokenId);    
+        _mint(owner, tokenId);   
         allowSpending(tokenId);
         _setTokenURI(tokenId, uri);
         return true;          

@@ -4,6 +4,7 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { IssueToken } from 'src/models/entities.model';
 import { Issuer } from 'src/models/issuer.model';
+import { TokenService } from 'src/services/token.service';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
 
@@ -12,7 +13,8 @@ import { Response, ResponseUtils } from 'src/utils';
 export class YasukeController {
     constructor(
         private configService: ConfigService,
-        private yasukeService: YasukeService
+        private yasukeService: YasukeService,
+        private tokenService: TokenService,
     ) { }
 
     @Get('/get-token-info/:tokenId')
@@ -25,7 +27,7 @@ export class YasukeController {
         return ResponseUtils.getSuccessResponse(await this.yasukeService.getAuctionInfo(tokenId, auctionId));
     }
 
-    @Get("/get-contract-addres")
+    @Get("/get-contract-address")
     async getContractAddress(): Promise<Response> {
         return ResponseUtils.getSuccessResponse(await this.configService.get<string>('CONTRACT_ADDRESS'));
     }
@@ -41,12 +43,12 @@ export class YasukeController {
     @Roles("api")
     @ApiSecurity('api-key')
     async issueToken(@Body() issueToken: IssueToken): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.issueToken(issueToken));
+        return ResponseUtils.getSuccessResponse(await this.tokenService.issueToken(issueToken));
     }
 
     @Get('list-tokens')
     async listTokens(@Query('page') page: number, @Query('limit') limit: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.listTokens({
+        return ResponseUtils.getSuccessResponse(await this.tokenService.listTokens({
             page,
             limit,
             route: '/v3/assets',
@@ -55,7 +57,7 @@ export class YasukeController {
 
     @Get('list-tokens/by-owner/:owner')
     async listTokensByOwner(@Query('page') page: number, @Query('limit') limit: number, @Param("owner") owner: string): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.listTokensByOwner({
+        return ResponseUtils.getSuccessResponse(await this.tokenService.listTokensByOwner({
             page,
             limit,
             route: '/v3/assets',
@@ -64,7 +66,7 @@ export class YasukeController {
 
     @Get('get-token/:tokenId')
     async getToken(@Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.getToken(tokenId));
+        return ResponseUtils.getSuccessResponse(await this.tokenService.getToken(tokenId));
     }
 
     @Post('start-auction/:auctionId/:tokenId')

@@ -16,8 +16,8 @@ export class TokenInfo {
     @Column()    
     owner: string;
 
-    @Column()    
     @Index("issuer-idx") 
+    @Column()        
     issuer: string;
 
     @Index("contract-idx") 
@@ -25,7 +25,16 @@ export class TokenInfo {
     contractAddress: string;
 
     @OneToMany(() => Media, media => media.tokenInfo)
-    media: Media[];        
+    media: Media[];       
+    
+    @Column()
+    symbol: string;
+
+    @Column()
+    name: string;
+
+    @Column()
+    dateIssued: number;
 }
 
 @Entity("auctionInfo")
@@ -38,9 +47,11 @@ export class AuctionInfo {
     @Column()
     auctionId: number;
 
+    @Index("tokenId-idx") 
     @Column()
     tokenId: number;
 
+    @Index("owner-idx") 
     @Column()
     owner: string;
 
@@ -64,6 +75,17 @@ export class AuctionInfo {
 
     @Column()    
     minimumBid: number;
+
+    bids: Bid[];       
+    _bidders?: string[];
+    _bids?: number[];
+}
+
+export class Bid {
+    auctionId: number;
+    tokenId: number;
+    bid: number;
+    bidder: string;
 }
 
 @Entity("media")
@@ -85,6 +107,10 @@ export class IssueToken {
     @ApiProperty()
     @IsNotEmpty()
     tokenId: number;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    dateIssued: number;
 
     @ApiProperty()
     @IsNotEmpty()

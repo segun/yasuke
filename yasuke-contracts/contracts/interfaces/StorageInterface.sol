@@ -89,6 +89,8 @@ interface StorageInterface {
     ) external;
 
     function getBids(uint256 tokenId, uint256 auctionId) external view returns (uint256[] memory);
+    
+    function getBidders(uint256 tokenId, uint256 auctionId) external view returns (address[] memory);
 
     function addToken(uint256 tokenId, Token token) external;
 

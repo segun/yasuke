@@ -39,5 +39,5 @@ export class Issuer {
     @ApiProperty()
     @IsNotEmpty()
     @Column()
-    blockchainAddress: string;       
+    blockchainAddress: string;   
 }

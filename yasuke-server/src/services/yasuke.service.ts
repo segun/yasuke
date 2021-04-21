@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AuctionInfo, IssueToken, Media, TokenInfo } from 'src/models/entities.model';
+import { AuctionInfo, Media, TokenInfo } from 'src/models/entities.model';
 import { Contract, ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Issuer } from 'src/models/issuer.model';
 import { Utils } from 'src/utils';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { ImageService } from './image.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path')
@@ -42,139 +41,6 @@ export class YasukeService {
         this.provider = new ethers.providers.JsonRpcProvider(this.webProvider);
         this.yasukeAbi = JSON.parse(fs.readFileSync(path.resolve('src/abis/Yasuke.json'), 'utf8')).abi;
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
-    }
-
-    async startAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let dbAuction = await this.auctionInfoRepository.createQueryBuilder("auctionInfo")
-                    .where("tokenId = :tid", { tid: tokenId })
-                    .andWhere("auctionId = :aid", { aid: auctionId })
-                    .getOne();
-
-                if (dbAuction !== undefined) {
-                    reject('Auction already exists for token');
-                }
-
-                dbAuction = await this.getAuctionInfo(tokenId, auctionId);
-
-                dbAuction = await this.auctionInfoRepository.save(dbAuction);
-
-                resolve(dbAuction);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    async listAuctionsByTokenId(options: IPaginationOptions, tokenId: number): Promise<Pagination<AuctionInfo>> {
-        const qb = this.auctionInfoRepository.createQueryBuilder("auctionInfo")
-            .where("tokenId = :tid", { tid: tokenId });
-        return paginate<AuctionInfo>(qb, options);
-    }
-
-    async getAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let dbAuction = await this.auctionInfoRepository.createQueryBuilder("auctionInfo")
-                    .where("tokenId = :tid", { tid: tokenId })
-                    .andWhere("auctionId = :aid", { aid: auctionId })
-                    .getOne();
-
-                if (dbAuction === undefined) {
-                    reject('Auction for Token not found');
-                }
-
-                resolve(dbAuction);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    async issueToken(issueToken: IssueToken): Promise<TokenInfo> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
-                    .where("tokenId = :tid", { tid: issueToken.tokenId })
-                    .getOne()
-
-                if (dbToken !== undefined) {
-                    reject("tokenId already exists");
-                }
-
-                dbToken = await this.getTokenInfo(issueToken.tokenId);
-                this.logger.debug('Token From Blockchain');
-                this.logger.debug(dbToken);
-                dbToken = await this.tokenInfoRepository.save(dbToken);
-
-                // now let's save the images                
-                let medias: Media[] = [];
-
-                if (issueToken.keys.length === issueToken.medias.length) {
-                    let count = 0;
-                    for (let key of issueToken.keys) {
-                        let dbMedia: Media = await this.mediaRepository.createQueryBuilder("media")
-                            .where("mediaKey = :key", { key: key })
-                            .andWhere("tokenInfoId = :tiid", { tiid: issueToken.tokenId })
-                            .getOne();
-
-                        if (dbMedia === undefined) {
-                            const imageUrl: string = await this.imageService.uploadAssetImage(issueToken.medias[count]);
-                            dbMedia = {
-                                tokenInfo: dbToken,
-                                mediaKey: key,
-                                media: imageUrl
-                            }
-
-                            await this.mediaRepository.save(dbMedia);
-                            dbMedia.tokenInfo = undefined;
-                            medias.push(dbMedia);                            
-                        } else {
-                            medias.push(dbMedia);
-                            this.logger.debug(`Media Already Exists for tokenId and Key: [${issueToken.tokenId} -> ${key}]`);
-                        }
-                        count++;
-                    }
-
-                    dbToken.media = medias;
-                    dbToken = await this.tokenInfoRepository.save(dbToken);
-                    resolve(dbToken);
-                } else {
-                    reject("Keys and Medias not the same length");
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    async listTokens(options: IPaginationOptions): Promise<Pagination<TokenInfo>> {
-        const qb = this.tokenInfoRepository.createQueryBuilder("tokenInfo");
-        return paginate<TokenInfo>(qb, options);
-    }
-
-    async listTokensByOwner(options: IPaginationOptions, owner: string): Promise<Pagination<TokenInfo>> {
-        const qb = this.tokenInfoRepository.createQueryBuilder("tokenInfo")
-            .where("owner = :owner", { owner: owner });
-        return paginate<TokenInfo>(qb, options);
-    }
-
-    async getToken(tokenId: number): Promise<TokenInfo> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
-                    .where("tokenId = :tid", { tid: tokenId })
-                    .getOne();
-
-                if (dbToken === undefined) {
-                    reject("Token with ID not found");
-                }
-                resolve(dbToken);
-            } catch (error) {
-                reject(error);
-            }
-        });
     }
 
     async saveIssuer(issuer: Issuer): Promise<Issuer> {
@@ -221,7 +87,10 @@ export class YasukeService {
                     owner: ti[1],
                     issuer: ti[2],
                     contractAddress: ti[3],
-                    media: []
+                    symbol: ti[4],
+                    name: ti[5],
+                    media: [],
+                    dateIssued: 0
                 }
 
                 this.logger.debug(tokenInfo);
@@ -251,6 +120,9 @@ export class YasukeService {
                     highestBid: +ethers.utils.formatEther(ai[7]),
                     cancelled: ai[8],
                     minimumBid: +ethers.utils.formatEther(ai[9]),
+                    bids: [],
+                    _bidders: ai[10],
+                    _bids: ai[11]
                 }
 
                 this.logger.debug(auctionInfo);

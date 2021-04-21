@@ -98,7 +98,9 @@ contract Storage is StorageInterface {
                 highestBidder[tokenId][auctionId],
                 highestBid[tokenId][auctionId],
                 cancelled[tokenId][auctionId],
-                minimumBid[tokenId][auctionId]
+                minimumBid[tokenId][auctionId],
+                bidders[tokenId][auctionId],
+                bids[tokenId][auctionId]
             );
 
         return ai;
@@ -177,6 +179,10 @@ contract Storage is StorageInterface {
         require(msg.sender == admin, "You can't do that");
         bidders[tokenId][auctionId].push(bidder);
     }
+
+    function getBidders(uint256 tokenId, uint256 auctionId) public view override returns (address[] memory) {
+        return bidders[tokenId][auctionId];
+    }    
 
     function addBid(
         uint256 tokenId,
