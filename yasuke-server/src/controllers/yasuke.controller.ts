@@ -4,6 +4,7 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { IssueToken } from 'src/models/entities.model';
 import { Issuer } from 'src/models/issuer.model';
+import { AuctionService } from 'src/services/auction.service';
 import { TokenService } from 'src/services/token.service';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
@@ -15,6 +16,7 @@ export class YasukeController {
         private configService: ConfigService,
         private yasukeService: YasukeService,
         private tokenService: TokenService,
+        private auctionService: AuctionService
     ) { }
 
     @Get('/get-token-info/:tokenId')
@@ -73,12 +75,12 @@ export class YasukeController {
     @Roles("api")
     @ApiSecurity('api-key')
     async startAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.startAuction(auctionId, tokenId));
+        return ResponseUtils.getSuccessResponse(await this.auctionService.startAuction(auctionId, tokenId));
     }
 
     @Get('list-auctions/by-token-id/:tokenId')
     async listAuctionsByTokenId(@Query('page') page: number, @Query('limit') limit: number, @Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.listAuctionsByTokenId({
+        return ResponseUtils.getSuccessResponse(await this.auctionService.listAuctionsByTokenId({
             page,
             limit,
             route: '/v3/assets',
@@ -87,6 +89,6 @@ export class YasukeController {
 
     @Get('get-auction/:auctionId/:tokenId')
     async getAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.getAuction(auctionId, tokenId));
+        return ResponseUtils.getSuccessResponse(await this.auctionService.getAuction(auctionId, tokenId));
     }
 }
