@@ -18,10 +18,6 @@ export class AuctionService {
     @InjectRepository(AuctionInfo)
     auctionInfoRepository: Repository<AuctionInfo>;
     
-
-    @InjectRepository(Bid)
-    bidRepository: Repository<Bid>;
-
     async startAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
         return new Promise(async (resolve, reject) => {
             try {
