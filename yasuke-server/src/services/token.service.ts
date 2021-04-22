@@ -25,7 +25,7 @@ export class TokenService {
     @InjectRepository(Media)
     mediaRepository: Repository<Media>
 
-    async getToken(tokenId: number): Promise<TokenInfo> {
+    async getTokenInfo(tokenId: number): Promise<TokenInfo> {
         return new Promise(async (resolve, reject) => {
             try {
                 let blockchainToken = await this.yasukeService.getTokenInfo(tokenId);
@@ -38,14 +38,18 @@ export class TokenService {
                 if (dbToken === undefined) {
                     reject("Token with ID not found");
                 }
-                
+
+                this.logger.debug(dbToken.media);
+
                 let media = dbToken.media.map(x => {
                     x.tokenInfo = undefined;
                     return x;
                 });
 
+                this.logger.debug(media);
+
                 blockchainToken.media = media;
-                blockchainToken.dateIssued = dbToken.dateIssued;                
+                blockchainToken.dateIssued = dbToken.dateIssued;
                 resolve(blockchainToken);
             } catch (error) {
                 reject(error);
@@ -59,12 +63,37 @@ export class TokenService {
         return paginate<TokenInfo>(qb, options);
     }
 
+    async checkTokenOwnership(owner: string): Promise<boolean> {
+        const qb = this.tokenInfoRepository.createQueryBuilder("tokenInfo");
+        qb.leftJoinAndSelect("tokenInfo.media", "media")
+        qb.where("owner = :owner", { owner: owner });
+        const ownerTokens = await qb.getMany();
+
+        for(let token of ownerTokens) {
+            let blockToken = await this.yasukeService.getTokenInfo(token.id);
+            if(blockToken.owner !== owner) {
+                //Update the owner in the database                
+                token.owner = blockToken.owner;
+                this.tokenInfoRepository.save(token);
+            }            
+        }
+
+        return true;
+    }
+
     async listTokensByOwner(options: IPaginationOptions, owner: string): Promise<Pagination<TokenInfo>> {
         const qb = this.tokenInfoRepository.createQueryBuilder("tokenInfo");
         qb.leftJoinAndSelect("tokenInfo.media", "media")
         qb.where("owner = :owner", { owner: owner });
+        this.checkTokenOwnership(owner).then(x => {
+            this.logger.debug('Checking token Ownership completed successfully');
+        }, error => {
+            this.logger.debug('Checking token Ownership errored out');
+            this.logger.debug(error);
+        });
+        
         return paginate<TokenInfo>(qb, options);
-    }    
+    }
 
     async issueToken(issueToken: IssueToken): Promise<TokenInfo> {
         return new Promise(async (resolve, reject) => {
@@ -113,6 +142,7 @@ export class TokenService {
 
                     dbToken.media = medias;
                     dbToken = await this.tokenInfoRepository.save(dbToken);
+                                    
                     resolve(dbToken);
                 } else {
                     reject("Keys and Medias not the same length");
@@ -121,5 +151,5 @@ export class TokenService {
                 reject(error);
             }
         });
-    }    
+    }
 }

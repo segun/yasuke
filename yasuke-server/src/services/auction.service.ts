@@ -47,7 +47,7 @@ export class AuctionService {
         return paginate<AuctionInfo>(qb, options);
     }
 
-    async getAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
+    async getAuctionInfo(auctionId: number, tokenId: number): Promise<AuctionInfo> {
         return new Promise(async (resolve, reject) => {
             try {
                 let blockchainAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);

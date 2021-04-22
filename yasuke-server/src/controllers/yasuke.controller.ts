@@ -21,12 +21,12 @@ export class YasukeController {
 
     @Get('/get-token-info/:tokenId')
     async getTokenInfo(@Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.getTokenInfo(tokenId));
+        return ResponseUtils.getSuccessResponse(await this.tokenService.getTokenInfo(tokenId));
     }
 
     @Get('/get-auction-info/:tokenId/:auctionId')
     async getAuctionInfo(@Param("tokenId") tokenId: number, @Param("auctionId") auctionId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.yasukeService.getAuctionInfo(tokenId, auctionId));
+        return ResponseUtils.getSuccessResponse(await this.auctionService.getAuctionInfo(tokenId, auctionId));
     }
 
     @Get("/get-contract-address")
@@ -71,11 +71,6 @@ export class YasukeController {
         }, owner));
     }
 
-    @Get('get-token/:tokenId')
-    async getToken(@Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.tokenService.getToken(tokenId));
-    }
-
     @Post('start-auction/:auctionId/:tokenId')
     @Roles("api")
     @ApiSecurity('api-key')
@@ -90,10 +85,5 @@ export class YasukeController {
             limit,
             route: '/v3/assets',
         }, tokenId));
-    }
-
-    @Get('get-auction/:auctionId/:tokenId')
-    async getAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.auctionService.getAuction(auctionId, tokenId));
     }
 }
