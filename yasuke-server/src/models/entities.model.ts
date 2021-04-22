@@ -35,6 +35,12 @@ export class TokenInfo {
 
     @Column()
     dateIssued: number;
+
+    @Column()
+    hasActiveAuction: boolean;
+
+    @Column()
+    lastAuctionId: number;
 }
 
 @Entity("auctionInfo")
@@ -75,6 +81,9 @@ export class AuctionInfo {
 
     @Column()    
     minimumBid: number;
+
+    @Column()
+    isActive: boolean;
 
     bids: Bid[];       
     _bidders?: string[];

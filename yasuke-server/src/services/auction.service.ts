@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ethers } from 'ethers';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { AuctionInfo, Bid } from 'src/models/entities.model';
+import { AuctionInfo, Bid, TokenInfo } from 'src/models/entities.model';
 import { Repository } from 'typeorm';
 import { YasukeService } from './yasuke.service';
 
@@ -17,6 +17,9 @@ export class AuctionService {
 
     @InjectRepository(AuctionInfo)
     auctionInfoRepository: Repository<AuctionInfo>;
+
+    @InjectRepository(TokenInfo)
+    tokenInfoRepository: Repository<TokenInfo>;    
     
     async startAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
         return new Promise(async (resolve, reject) => {
@@ -30,9 +33,19 @@ export class AuctionService {
                     reject('Auction already exists for token');
                 }
 
-                dbAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);
+                let dbToken = await this.tokenInfoRepository.findOne(tokenId);
 
-                dbAuction = await this.auctionInfoRepository.save(dbAuction);
+                if(dbToken === undefined) {
+                    reject('Token with token id not found');
+                }
+
+                let blockAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);                
+                dbAuction = await this.auctionInfoRepository.save(blockAuction);                
+                
+                dbToken.lastAuctionId = auctionId;
+                dbToken.hasActiveAuction = true;
+
+                this.tokenInfoRepository.save(dbToken);
 
                 resolve(dbAuction);
             } catch (error) {
@@ -51,6 +64,19 @@ export class AuctionService {
         return new Promise(async (resolve, reject) => {
             try {
                 let blockchainAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);
+
+                if(!blockchainAuction.isActive) {
+                    let dbToken = await this.tokenInfoRepository.findOne(tokenId);
+
+                    if(dbToken === undefined) {
+                        reject('Token with token id not found');
+                    }
+
+                    dbToken.hasActiveAuction = false;
+                    this.tokenInfoRepository.save(dbToken);
+                    
+                    reject('Auction has ended');
+                }
 
                 let dbAuction = await this.auctionInfoRepository.createQueryBuilder("auctionInfo")
                     .where("tokenId = :tid", { tid: tokenId })

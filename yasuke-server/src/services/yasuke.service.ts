@@ -102,7 +102,9 @@ export class YasukeService {
                     symbol: ti[4],
                     name: ti[5],
                     media: [],
-                    dateIssued: 0
+                    dateIssued: 0,
+                    hasActiveAuction: false,
+                    lastAuctionId: 0,
                 }
 
                 this.logger.debug(tokenInfo);
@@ -134,7 +136,8 @@ export class YasukeService {
                     minimumBid: +ethers.utils.formatEther(ai[9]),
                     bids: [],
                     _bidders: ai[10],
-                    _bids: ai[11]
+                    _bids: ai[11],
+                    isActive: ai[12],                    
                 }
 
                 this.logger.debug(auctionInfo);
