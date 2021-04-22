@@ -189,7 +189,7 @@ contract Yasuke is YasukeInterface {
         // console.log("WE: %s, ACC: %s, WA: %d", withdrawEth, withdrawalAccount, withdrawalAmount);
         if (withdrawEth) {
             // if we get here, we can safely say the auction is finished
-            ----- 
+            store.setStarted(tokenId, auctionId, false);
             require(withdrawalAmount > 0, 'ZW');
             bool sent = withdrawalAccount.send(withdrawalAmount);
 
