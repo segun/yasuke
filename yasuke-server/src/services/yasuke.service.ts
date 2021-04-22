@@ -20,21 +20,14 @@ export class YasukeService {
     yasukeAbi: string;
     webProvider: string;
 
-    @InjectRepository(Media)
-    private mediaRepository: Repository<Media>;
     @InjectRepository(Issuer)
     private issuerRepository: Repository<Issuer>;
-    @InjectRepository(TokenInfo)
-    private tokenInfoRepository: Repository<TokenInfo>;
-    @InjectRepository(AuctionInfo)
-    private auctionInfoRepository: Repository<AuctionInfo>;
 
 
     private readonly logger = new Logger(YasukeService.name);
 
     constructor(
         private configService: ConfigService,
-        private imageService: ImageService
     ) {
         this.webProvider = this.configService.get<string>('WEB3_PROVIDER');
         this.yasukeAddress = this.configService.get<string>('CONTRACT_ADDRESS');
@@ -61,7 +54,7 @@ export class YasukeService {
             }
         });
     }
-    
+
     async saveIssuer(issuer: Issuer): Promise<Issuer> {
         return new Promise(async (resolve, reject) => {
             try {

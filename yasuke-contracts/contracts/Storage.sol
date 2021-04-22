@@ -27,21 +27,35 @@ contract Storage is StorageInterface {
 
     address internal parent = address(0);
 
-    uint256 internal issueFee = 0.001 ether;
+    uint256 internal xendFeesPercentage = 5;
+    uint256 internal issuerFeesPercentage = 10;
+    address internal xendFeesAddress = 0x616B6c01DFeA4AF613326FDF683429f43CEe86FD;
 
-    function setIssueFee(uint256 _issueFee) public override {
+    function setXendFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
-        issueFee = _issueFee;
+        xendFeesPercentage = _percentage;
     }
 
-    function getIssueFee() public view override returns (uint256) {
-        return issueFee;
+    function getXendFeesPercentage() public view override returns (uint256) {
+        return xendFeesPercentage;
     }
 
-    function echo() public view override returns (bool) {
-        console.log('2. Sender: %s, Admin: %s, Parent: %s', msg.sender, admin, parent);
+    function setIssuerFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
-        return true;
+        issuerFeesPercentage = _percentage;
+    }
+
+    function getIssuerFeesPercentage() public view override returns (uint256) {
+        return issuerFeesPercentage;
+    }
+
+    function setXendFeesAddress(address _feesAddress) public override {
+        require(msg.sender == admin, "You can't do that");
+        xendFeesAddress = _feesAddress;
+    }
+
+    function getXendFeesAddress() public override view returns (address) {        
+        return xendFeesAddress;
     }
 
     function getParent() public view override returns (address) {
@@ -56,8 +70,8 @@ contract Storage is StorageInterface {
         if (admin == address(0) && parent == address(0)) {
             parent = _parent;
             admin = _admin;
-        } else if(parent == _parent) {
-            admin = _admin;            
+        } else if (parent == _parent) {
+            admin = _admin;
         } else {
             revert('OACDT');
         }
@@ -182,7 +196,7 @@ contract Storage is StorageInterface {
 
     function getBidders(uint256 tokenId, uint256 auctionId) public view override returns (address[] memory) {
         return bidders[tokenId][auctionId];
-    }    
+    }
 
     function addBid(
         uint256 tokenId,
@@ -241,5 +255,11 @@ contract Storage is StorageInterface {
 
     function isInAuction(uint256 tokenId) public view override returns (bool) {
         return inAuction[tokenId];
+    }
+
+    function echo() public view override returns (bool) {
+        console.log('2. Sender: %s, Admin: %s, Parent: %s', msg.sender, admin, parent);
+        require(msg.sender == admin, "You can't do that");
+        return true;
     }
 }

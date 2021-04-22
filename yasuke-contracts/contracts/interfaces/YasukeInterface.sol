@@ -19,7 +19,7 @@ interface YasukeInterface {
         string memory _uri,
         string memory _name,
         string memory _symbol
-    ) external payable;
+    ) external;
 
     function getTokenInfo(uint256 tokenId) external view returns (Models.Asset memory);
 

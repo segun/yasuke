@@ -89,16 +89,24 @@ interface StorageInterface {
     ) external;
 
     function getBids(uint256 tokenId, uint256 auctionId) external view returns (uint256[] memory);
-    
+
     function getBidders(uint256 tokenId, uint256 auctionId) external view returns (address[] memory);
 
     function addToken(uint256 tokenId, Token token) external;
 
     function getToken(uint256 tokenId) external view returns (Token);
 
-    function setIssueFee(uint256 issueFee) external;
+    function setXendFeesPercentage(uint256 percentage) external;
 
-    function getIssueFee() external view returns (uint256);
+    function getXendFeesPercentage() external view returns (uint256);
+
+    function setIssuerFeesPercentage(uint256 percentage) external;
+
+    function getIssuerFeesPercentage() external view returns (uint256);    
+
+    function setXendFeesAddress(address xfAddress) external;
+
+    function getXendFeesAddress() external view returns (address);    
 
     function echo() external view returns (bool);
 

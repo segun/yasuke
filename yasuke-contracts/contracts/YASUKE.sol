@@ -19,8 +19,8 @@ contract Yasuke is YasukeInterface {
     constructor(address storeAddress) {
         minter = msg.sender;
         store = StorageInterface(storeAddress);
-        console.log("Calling Set Admin");
-        store.setAdmin(address(this), msg.sender);        
+        console.log('Calling Set Admin');
+        store.setAdmin(address(this), msg.sender);
     }
 
     function testUpgrade() public view returns (address, address) {
@@ -42,15 +42,15 @@ contract Yasuke is YasukeInterface {
         require(!store.isStarted(tokenId, auctionId), 'AAS');
         Models.AuctionInfo memory ai =
             Models.AuctionInfo(
-                auctionId, 
-                tokenId, 
-                msg.sender, 
-                startBlock, 
-                endBlock, 
-                sellNowPrice, 
-                address(0), 
-                0, 
-                false, 
+                auctionId,
+                tokenId,
+                msg.sender,
+                startBlock,
+                endBlock,
+                sellNowPrice,
+                address(0),
+                0,
+                false,
                 minimumBid,
                 store.getBidders(tokenId, auctionId),
                 store.getBids(tokenId, auctionId)
@@ -64,8 +64,7 @@ contract Yasuke is YasukeInterface {
         string memory _uri,
         string memory _name,
         string memory _symbol
-    ) public override payable {
-
+    ) public override {
         Token t = new Token(owner, _uri, _name, _symbol);
         require(t.mint(tokenId), 'MF');
         store.addToken(tokenId, t);
@@ -80,7 +79,7 @@ contract Yasuke is YasukeInterface {
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
-        require(msg.value > 0, 'CNB0');        
+        require(msg.value > 0, 'CNB0');
         require(msg.sender != t.ownerOf(tokenId), 'OCB');
 
         uint256 fundsByBidder = store.getFundsByBidder(tokenId, auctionId, msg.sender);
@@ -154,7 +153,7 @@ contract Yasuke is YasukeInterface {
             } else {
                 // transfer the token from owner to highest bidder
                 address tokenOwner = t.ownerOf(tokenId);
-                require(t.changeOwnership(tokenId, tokenOwner, highestBidder), 'CNCO');                
+                require(t.changeOwnership(tokenId, tokenOwner, highestBidder), 'CNCO');
                 withdrawEth = false;
                 store.setInAuction(tokenId, false); // we can create new auction
                 store.setOwner(tokenId, highestBidder);
@@ -183,14 +182,7 @@ contract Yasuke is YasukeInterface {
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
-        Models.Asset memory a = Models.Asset(
-            tokenId, 
-            t.ownerOf(tokenId), 
-            t.getIssuer(), 
-            address(t),
-            t.name(),
-            t.symbol()
-        );
+        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t), t.name(), t.symbol());
         return a;
     }
 
@@ -204,6 +196,6 @@ contract Yasuke is YasukeInterface {
         require(block.number <= store.getEndBlock(tokenId, auctionId), 'AE');
         require(!store.isCancelled(tokenId, auctionId), 'AC');
         require(store.isStarted(tokenId, auctionId), 'ANS');
-        require(store.isInAuction(tokenId), 'ANIP');        
-    }    
+        require(store.isInAuction(tokenId), 'ANIP');
+    }
 }
