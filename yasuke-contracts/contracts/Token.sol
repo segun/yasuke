@@ -8,12 +8,12 @@ import './library/console.sol';
 
 contract Token is ERC721 {
     address internal owner;
-    address internal issuer;
+    address payable internal issuer;
     address internal admin;
     string internal uri;
 
 
-    constructor(address _owner, string memory _uri, string memory _name, string memory _symbol) ERC721(_name, _symbol) {
+    constructor(address payable _owner, string memory _uri, string memory _name, string memory _symbol) ERC721(_name, _symbol) {
         uri = _uri;
         owner = _owner; 
         issuer = _owner;
@@ -41,7 +41,7 @@ contract Token is ERC721 {
         _approve(msg.sender, tokenId);
     }
 
-    function getIssuer() public view returns (address) {
+    function getIssuer() public view returns (address payable) {
         return issuer;
     }
 }

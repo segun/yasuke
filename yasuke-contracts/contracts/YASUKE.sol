@@ -60,7 +60,7 @@ contract Yasuke is YasukeInterface {
 
     function issueToken(
         uint256 tokenId,
-        address owner,
+        address payable owner,
         string memory _uri,
         string memory _name,
         string memory _symbol
@@ -144,7 +144,33 @@ contract Yasuke is YasukeInterface {
         } else if (withdrawalAccount == owner) {
             // withdraw funds from highest bidder
             store.setFundsByBidder(tokenId, auctionId, highestBidder, 0);
-            withdrawEth = true;
+
+            // we have to take fees
+            uint256 xfp = store.getXendFeesPercentage();
+            uint256 ifp = store.getIssuerFeesPercentage();
+
+            if (t.getIssuer() == owner) {
+                // owner is issuer, xendFees is xendFees + issuerFees 
+                xfp = store.getXendFeesPercentage() + store.getIssuerFeesPercentage();
+                ifp = 0;
+            }
+
+            uint256 xendFees = (xfp * withdrawalAmount) / 100;
+            uint256 issuerFees = (ifp * withdrawalAmount) / 100;            
+
+            withdrawalAmount = withdrawalAmount -  xendFees - issuerFees;
+
+            if(issuerFees > 0) {
+                bool sent = t.getIssuer().send(issuerFees);
+                require(sent, 'CNSTI');
+            }
+
+            if(xendFees > 0) {
+                bool sent = store.getXendFeesAddress().send(xendFees);
+                require(sent, 'CNSTXND');
+            }
+
+            withdrawEth = true;            
         } else if (withdrawalAccount == highestBidder) {
             if (cancelled) {
                 // do normal refund
@@ -162,6 +188,8 @@ contract Yasuke is YasukeInterface {
 
         // console.log("WE: %s, ACC: %s, WA: %d", withdrawEth, withdrawalAccount, withdrawalAmount);
         if (withdrawEth) {
+            // if we get here, we can safely say the auction is finished
+            ----- 
             require(withdrawalAmount > 0, 'ZW');
             bool sent = withdrawalAccount.send(withdrawalAmount);
 

@@ -15,7 +15,7 @@ interface YasukeInterface {
 
     function issueToken(
         uint256 tokenId,        
-        address owner,
+        address payable owner,
         string memory _uri,
         string memory _name,
         string memory _symbol

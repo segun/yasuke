@@ -29,7 +29,7 @@ contract Storage is StorageInterface {
 
     uint256 internal xendFeesPercentage = 5;
     uint256 internal issuerFeesPercentage = 10;
-    address internal xendFeesAddress = 0x616B6c01DFeA4AF613326FDF683429f43CEe86FD;
+    address payable internal xendFeesAddress = 0x616B6c01DFeA4AF613326FDF683429f43CEe86FD;
 
     function setXendFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
@@ -49,12 +49,12 @@ contract Storage is StorageInterface {
         return issuerFeesPercentage;
     }
 
-    function setXendFeesAddress(address _feesAddress) public override {
+    function setXendFeesAddress(address payable _feesAddress) public override {
         require(msg.sender == admin, "You can't do that");
         xendFeesAddress = _feesAddress;
     }
 
-    function getXendFeesAddress() public override view returns (address) {        
+    function getXendFeesAddress() public override view returns (address payable) {        
         return xendFeesAddress;
     }
 
@@ -114,7 +114,8 @@ contract Storage is StorageInterface {
                 cancelled[tokenId][auctionId],
                 minimumBid[tokenId][auctionId],
                 bidders[tokenId][auctionId],
-                bids[tokenId][auctionId]
+                bids[tokenId][auctionId],
+                started[tokenId][auctionId]
             );
 
         return ai;

@@ -104,9 +104,9 @@ interface StorageInterface {
 
     function getIssuerFeesPercentage() external view returns (uint256);    
 
-    function setXendFeesAddress(address xfAddress) external;
+    function setXendFeesAddress(address payable xfAddress) external;
 
-    function getXendFeesAddress() external view returns (address);    
+    function getXendFeesAddress() external view returns (address payable);    
 
     function echo() external view returns (bool);
 
