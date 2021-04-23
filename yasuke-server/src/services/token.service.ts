@@ -109,6 +109,7 @@ export class TokenService {
                 dbToken = await this.yasukeService.getTokenInfo(issueToken.tokenId);
                 this.logger.debug('Token From Blockchain');
                 this.logger.debug(dbToken);
+                dbToken.dateIssued = issueToken.dateIssued;
                 dbToken = await this.tokenInfoRepository.save(dbToken);
 
                 // now let's save the images                
