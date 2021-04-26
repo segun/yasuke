@@ -18,6 +18,7 @@ library Models {
         address owner;
         uint256 startBlock;
         uint256 endBlock;
+        uint256 currentBlock;
         uint256 sellNowPrice;
         address highestBidder;
         uint256 highestBid;

@@ -9,6 +9,7 @@ import './Token.sol';
 
 contract Storage is StorageInterface {
     mapping(uint256 => address) internal owner;
+    mapping(uint256 => mapping(uint256 => uint256)) internal currentBlock;
     mapping(uint256 => mapping(uint256 => uint256)) internal startBlock;
     mapping(uint256 => mapping(uint256 => uint256)) internal endBlock;
     mapping(uint256 => mapping(uint256 => uint256)) internal sellNowPrice;
@@ -108,6 +109,7 @@ contract Storage is StorageInterface {
                 owner[tokenId],
                 startBlock[tokenId][auctionId],
                 endBlock[tokenId][auctionId],
+                currentBlock[tokenId][auctionId],
                 sellNowPrice[tokenId][auctionId],
                 highestBidder[tokenId][auctionId],
                 highestBid[tokenId][auctionId],
@@ -185,6 +187,10 @@ contract Storage is StorageInterface {
     function getStartBlock(uint256 tokenId, uint256 auctionId) public view override returns (uint256) {
         return startBlock[tokenId][auctionId];
     }
+
+    function getCurrentBlock(uint256 tokenId, uint256 auctionId) public view override returns (uint256) {
+        return currentBlock[tokenId][auctionId];
+    }    
 
     function addBidder(
         uint256 tokenId,

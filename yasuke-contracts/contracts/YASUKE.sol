@@ -33,6 +33,7 @@ contract Yasuke is YasukeInterface {
         uint256 auctionId,
         uint256 startBlock,
         uint256 endBlock,
+        uint256 currentBlock,
         uint256 sellNowPrice,
         uint256 minimumBid
     ) public override {
@@ -47,13 +48,15 @@ contract Yasuke is YasukeInterface {
                 msg.sender,
                 startBlock,
                 endBlock,
+                currentBlock,
                 sellNowPrice,
                 address(0),
                 0,
                 false,
                 minimumBid,
                 store.getBidders(tokenId, auctionId),
-                store.getBids(tokenId, auctionId)
+                store.getBids(tokenId, auctionId),
+                true
             );
         store.startAuction(ai);
     }

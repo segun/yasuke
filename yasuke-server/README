@@ -4,7 +4,7 @@ YASUKE METHODS
 Method Name             | Parameters
 -----------------------------------------------------------------------------------------------------
 issueToken              | tokenId, owner, uri, name, symbol
-startAuction            | tokenId, auctionId, startBlock, endBlock, sellNowPrice, minimumBid
+startAuction            | tokenId, auctionId, startBlock, endBlock, currentBlock, sellNowPrice, minimumBid
 placeBid                | tokenId, auctionId
 endBid                  | tokenId, auctionId
 withdraw                | tokenId, auctionId
@@ -39,7 +39,7 @@ Metamask Integration
 1. placeBid
       abi = [
         "function issueToken(uint256,address,string,string,string)",
-        "function startAuction(uint256,uint256,uint256,uint256,uint256,uint256)",
+        "function startAuction(uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
         "function placeBid(uint256,uint256)",
         "function endBid(uint256,uint256)",
         "function withdraw(uint256,uint256)",

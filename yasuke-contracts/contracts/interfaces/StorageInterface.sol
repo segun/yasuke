@@ -23,6 +23,8 @@ interface StorageInterface {
 
     function getStartBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
+    function getCurrentBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
+
     function isCancelled(uint256 tokenId, uint256 auctionId) external view returns (bool);
 
     function setCancelled(

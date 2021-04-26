@@ -9,6 +9,7 @@ interface YasukeInterface {
         uint256 auctionId,
         uint256 startBlock,
         uint256 endBlock,
+        uint256 currentBlock,
         uint256 sellNowPrice,
         uint256 minimumBid
     ) external;
