@@ -29,6 +29,7 @@ export class YasukeService {
     constructor(
         private configService: ConfigService,
     ) {
+        this.logger.debug(ethers.utils.formatEther('600000000000000000'));
         this.webProvider = this.configService.get<string>('WEB3_PROVIDER');
         this.yasukeAddress = this.configService.get<string>('CONTRACT_ADDRESS');
         this.provider = new ethers.providers.JsonRpcProvider(this.webProvider);
@@ -130,15 +131,16 @@ export class YasukeService {
                     owner: ai[2],
                     startBlock: ai[3].toNumber(),
                     endBlock: ai[4].toNumber(),
-                    sellNowPrice: +ethers.utils.formatEther(ai[5]),
-                    highestBidder: ai[6],
-                    highestBid: +ethers.utils.formatEther(ai[7]),
-                    cancelled: ai[8],
-                    minimumBid: +ethers.utils.formatEther(ai[9]),
+                    currentBlock: ai[5],
+                    sellNowPrice: +ethers.utils.formatEther(ai[6] + ""),
+                    highestBidder: ai[7],
+                    highestBid: +ethers.utils.formatEther(ai[8] + ""),
+                    cancelled: ai[9],
+                    minimumBid: +ethers.utils.formatEther(ai[10] + ""),
                     bids: [],                    
-                    _bidders: ai[10],
-                    _bids: ai[11],
-                    isActive: ai[12],                    
+                    _bidders: ai[11],
+                    _bids: ai[12],
+                    isActive: ai[13],                    
                 }
 
                 this.logger.debug(auctionInfo);

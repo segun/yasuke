@@ -68,6 +68,9 @@ export class AuctionInfo {
     endBlock: number;
 
     @Column({width: 20, type: 'bigint'})
+    currentBlock: number;
+
+    @Column({width: 20, type: 'bigint'})
     sellNowPrice: number;
 
     @Column()    
