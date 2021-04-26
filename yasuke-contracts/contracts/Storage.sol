@@ -94,6 +94,7 @@ contract Storage is StorageInterface {
         owner[tokenId] = ai.owner;
         startBlock[tokenId][auctionId] = ai.startBlock;
         endBlock[tokenId][auctionId] = ai.endBlock;
+        currentBlock[tokenId][auctionId] = ai.endBlock;
         sellNowPrice[tokenId][auctionId] = ai.sellNowPrice;
         minimumBid[tokenId][auctionId] = ai.minimumBid;
         highestBid[tokenId][auctionId] = ai.minimumBid;

@@ -50,6 +50,8 @@ export class TokenService {
 
                 blockchainToken.media = media;
                 blockchainToken.dateIssued = dbToken.dateIssued;
+                blockchainToken.lastAuctionId = dbToken.lastAuctionId;
+                blockchainToken.hasActiveAuction = dbToken.hasActiveAuction;
                 resolve(blockchainToken);
             } catch (error) {
                 reject(error);

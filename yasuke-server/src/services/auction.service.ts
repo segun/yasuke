@@ -44,7 +44,6 @@ export class AuctionService {
                 }
 
                 let blockAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);                
-                blockAuction.isActive = true;
                 dbAuction = await this.auctionInfoRepository.save(blockAuction);                
                 
                 dbToken.lastAuctionId = auctionId;
