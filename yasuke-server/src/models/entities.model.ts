@@ -9,7 +9,7 @@ export class TokenInfo {
     id?: number;    
 
     @Index("tokenId-idx") 
-    @Column()
+    @Column({width: 20, type: 'bigint'})
     tokenId: number;
 
     @Index("owner-idx") 
@@ -33,7 +33,7 @@ export class TokenInfo {
     @Column()
     name: string;
 
-    @Column()
+    @Column({width: 20, type: 'bigint'})
     dateIssued: number;
 
     @Column()
@@ -50,39 +50,39 @@ export class AuctionInfo {
     id?: number;    
 
     @Index("auctionId-idx") 
-    @Column()
+    @Column({width: 20, type: 'bigint'})
     auctionId: number;
 
     @Index("tokenId-idx") 
-    @Column()
+    @Column({width: 20, type: 'bigint'})
     tokenId: number;
 
     @Index("owner-idx") 
     @Column()
     owner: string;
 
-    @Column()    
+    @Column({width: 20, type: 'bigint'})
     startBlock: number;
 
-    @Column()    
+    @Column({width: 20, type: 'bigint'})
     endBlock: number;
 
-    @Column()    
+    @Column({width: 20, type: 'bigint'})
     sellNowPrice: number;
 
     @Column()    
     highestBidder: string;
 
-    @Column()    
+    @Column({width: 20, type: 'bigint'})  
     highestBid: number;
 
     @Column()    
     cancelled: boolean;
 
-    @Column()    
+    @Column({width: 20, type: 'bigint'})
     minimumBid: number;
 
-    @Column()
+    @Column({default: false})
     isActive: boolean;
 
     bids: Bid[];       
@@ -114,11 +114,11 @@ export class Media {
 
 export class IssueToken {
     @ApiProperty()
-    @IsNotEmpty()
+    @Column({width: 20, type: 'bigint'})
     tokenId: number;
 
     @ApiProperty()
-    @IsNotEmpty()
+    @Column({width: 20, type: 'bigint'})
     dateIssued: number;
 
     @ApiProperty()

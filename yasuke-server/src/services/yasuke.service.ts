@@ -123,6 +123,7 @@ export class YasukeService {
         return new Promise(async (resolve, reject) => {
             try {
                 const ai = await this.yasukeContract.getAuctionInfo(tokenId, auctionId);
+                this.logger.debug(`Auction Info From Blockchain: ${ai}`)
                 const auctionInfo: AuctionInfo = {
                     auctionId: ai[0].toNumber(),
                     tokenId: ai[1].toNumber(),
@@ -134,7 +135,7 @@ export class YasukeService {
                     highestBid: +ethers.utils.formatEther(ai[7]),
                     cancelled: ai[8],
                     minimumBid: +ethers.utils.formatEther(ai[9]),
-                    bids: [],
+                    bids: [],                    
                     _bidders: ai[10],
                     _bids: ai[11],
                     isActive: ai[12],                    

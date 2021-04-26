@@ -33,7 +33,11 @@ export class AuctionService {
                     reject('Auction already exists for token');
                 }
 
-                let dbToken = await this.tokenInfoRepository.findOne(tokenId);
+                let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
+                    .where("tokenId = :tid", { tid: tokenId })            
+                    .getOne();
+
+                this.logger.debug(`DB Token: ${dbToken}`);
 
                 if(dbToken === undefined) {
                     reject('Token with token id not found');
