@@ -124,9 +124,9 @@ export class YasukeService {
             try {
                 const ai = await this.yasukeContract.getAuctionInfo(tokenId, auctionId);
                 this.logger.debug(`Auction Info From Blockchain: ${ai}`)
-                const auctionInfo: AuctionInfo = {
-                    auctionId: ai[0].toNumber(),
-                    tokenId: ai[1].toNumber(),
+                const auctionInfo: AuctionInfo = {                    
+                    tokenId: ai[0].toNumber(),
+                    auctionId: ai[1].toNumber(),
                     owner: ai[2],
                     startBlock: ai[3].toNumber(),
                     endBlock: ai[4].toNumber(),
