@@ -131,7 +131,7 @@ export class YasukeService {
                     owner: ai[2],
                     startBlock: ai[3].toNumber(),
                     endBlock: ai[4].toNumber(),
-                    currentBlock: ai[5],
+                    currentBlock: ai[5].toNumber(),
                     sellNowPrice: +ethers.utils.formatEther(ai[6] + ""),
                     highestBidder: ai[7],
                     highestBid: +ethers.utils.formatEther(ai[8] + ""),
