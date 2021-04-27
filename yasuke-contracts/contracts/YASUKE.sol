@@ -83,7 +83,7 @@ contract Yasuke is YasukeInterface {
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
         require(msg.value > 0, 'CNB0');
-        require(msg.sender != t.ownerOf(tokenId), 'OCB');
+        //require(msg.sender != t.ownerOf(tokenId), 'OCB');
 
         uint256 fundsByBidder = store.getFundsByBidder(tokenId, auctionId, msg.sender);
         uint256 sellNowPrice = store.getSellNowPrice(tokenId, auctionId);
@@ -103,7 +103,11 @@ contract Yasuke is YasukeInterface {
             // bid should now be max bid
             newBid = sellNowPrice;
         } else {
-            require(newBid > store.getHighestBid(tokenId, auctionId), 'BTL');
+            if(store.getHighestBid(tokenId, auctionId) != store.getMinimumBid(tokenId, auctionId)) {
+                require(newBid > store.getHighestBid(tokenId, auctionId), 'BTL');
+            } else {
+                require(newBid >= store.getHighestBid(tokenId, auctionId), 'BTL2');
+            }
         }
 
         store.setFundsByBidder(tokenId, auctionId, msg.sender, newBid);

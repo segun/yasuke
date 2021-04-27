@@ -21,6 +21,8 @@ interface StorageInterface {
 
     function getHighestBid(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
+    function getMinimumBid(uint256 tokenId, uint256 auctionId) external view returns (uint256);
+
     function getStartBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
     function getCurrentBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);

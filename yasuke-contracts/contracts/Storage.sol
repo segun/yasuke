@@ -150,6 +150,10 @@ contract Storage is StorageInterface {
         return highestBid[tokenId][auctionId];
     }
 
+    function getMinimumBid(uint256 tokenId, uint256 auctionId) public view override returns (uint256) {
+        return minimumBid[tokenId][auctionId];
+    }    
+
     function setHighestBid(
         uint256 tokenId,
         uint256 auctionId,
