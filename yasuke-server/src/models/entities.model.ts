@@ -88,6 +88,12 @@ export class AuctionInfo {
     @Column({default: false})
     isActive: boolean;
 
+    @Column({width: 20, type: 'bigint'})
+    startDate?: number;
+
+    @Column({width: 20, type: 'bigint'})
+    endDate?: number;    
+
     bids: Bid[];       
     _bidders?: string[];
     _bids?: number[];
@@ -131,4 +137,22 @@ export class IssueToken {
     @ApiProperty()
     @IsNotEmpty()    
     keys: string[];            
+}
+
+export class StartAuction {
+    @ApiProperty()
+    @IsNotEmpty()    
+    tokenId: number;
+
+    @ApiProperty()
+    @IsNotEmpty()    
+    auctionId: number;    
+
+    @ApiProperty()
+    @IsNotEmpty()    
+    startDate: number;    
+
+    @ApiProperty()
+    @IsNotEmpty()    
+    endDate: number;    
 }

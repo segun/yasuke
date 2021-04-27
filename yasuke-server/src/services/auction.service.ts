@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ethers } from 'ethers';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { AuctionInfo, Bid, TokenInfo } from 'src/models/entities.model';
+import { AuctionInfo, Bid, StartAuction, TokenInfo } from 'src/models/entities.model';
 import { Repository } from 'typeorm';
 import { YasukeService } from './yasuke.service';
 
@@ -21,12 +21,12 @@ export class AuctionService {
     @InjectRepository(TokenInfo)
     tokenInfoRepository: Repository<TokenInfo>;    
     
-    async startAuction(auctionId: number, tokenId: number): Promise<AuctionInfo> {
+    async startAuction(sa: StartAuction): Promise<AuctionInfo> {
         return new Promise(async (resolve, reject) => {
             try {
                 let dbAuction = await this.auctionInfoRepository.createQueryBuilder("auctionInfo")
-                    .where("tokenId = :tid", { tid: tokenId })
-                    .andWhere("auctionId = :aid", { aid: auctionId })
+                    .where("tokenId = :tid", { tid: sa.tokenId })
+                    .andWhere("auctionId = :aid", { aid: sa.auctionId })
                     .getOne();
 
                 if (dbAuction !== undefined) {
@@ -34,7 +34,7 @@ export class AuctionService {
                 }
 
                 let dbToken = await this.tokenInfoRepository.createQueryBuilder("tokenInfo")
-                    .where("tokenId = :tid", { tid: tokenId })            
+                    .where("tokenId = :tid", { tid: sa.tokenId })            
                     .getOne();
 
                 this.logger.debug(`DB Token: ${dbToken}`);
@@ -43,11 +43,13 @@ export class AuctionService {
                     reject('Token with token id not found');
                 }
 
-                let blockAuction = await this.yasukeService.getAuctionInfo(tokenId, auctionId);                
+                let blockAuction = await this.yasukeService.getAuctionInfo(sa.tokenId, sa.auctionId);                
+                blockAuction.startDate = sa.startDate;
+                blockAuction.endDate = sa.endDate;
                 dbAuction = await this.auctionInfoRepository.save(blockAuction);                
                 
-                dbToken.lastAuctionId = auctionId;
-                dbToken.hasActiveAuction = true;
+                dbToken.lastAuctionId = sa.auctionId;
+                dbToken.hasActiveAuction = true;                
 
                 this.tokenInfoRepository.save(dbToken);
 

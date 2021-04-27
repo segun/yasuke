@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
-import { IssueToken } from 'src/models/entities.model';
+import { IssueToken, StartAuction } from 'src/models/entities.model';
 import { Issuer } from 'src/models/issuer.model';
 import { AuctionService } from 'src/services/auction.service';
 import { TokenService } from 'src/services/token.service';
@@ -71,11 +71,11 @@ export class YasukeController {
         }, owner));
     }
 
-    @Post('start-auction/:auctionId/:tokenId')
+    @Post('start-auction')
     @Roles("api")
     @ApiSecurity('api-key')
-    async startAuction(@Param("auctionId") auctionId: number, @Param("tokenId") tokenId: number): Promise<Response> {
-        return ResponseUtils.getSuccessResponse(await this.auctionService.startAuction(auctionId, tokenId));
+    async startAuction(@Body() sa: StartAuction): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.auctionService.startAuction(sa));
     }
 
     @Get('list-auctions/by-token-id/:tokenId')
