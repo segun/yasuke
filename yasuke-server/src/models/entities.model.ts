@@ -88,11 +88,11 @@ export class AuctionInfo {
     @Column({default: false})
     isActive: boolean;
 
-    @Column({width: 20, type: 'bigint'})
-    startDate?: number;
+    @Column()
+    startDate?: string;
 
-    @Column({width: 20, type: 'bigint'})
-    endDate?: number;    
+    @Column()
+    endDate?: string;    
 
     bids: Bid[];       
     _bidders?: string[];
@@ -150,9 +150,9 @@ export class StartAuction {
 
     @ApiProperty()
     @IsNotEmpty()    
-    startDate: number;    
+    startDate: string;    
 
     @ApiProperty()
     @IsNotEmpty()    
-    endDate: number;    
+    endDate: string;    
 }
