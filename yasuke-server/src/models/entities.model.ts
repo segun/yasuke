@@ -41,6 +41,9 @@ export class TokenInfo {
 
     @Column()
     lastAuctionId: number;
+
+    @Column()
+    category: string;
 }
 
 @Entity("auctionInfo")
@@ -132,11 +135,22 @@ export class IssueToken {
 
     @ApiProperty()
     @IsNotEmpty()
+    category: string;
+
+    @ApiProperty()
+    @IsNotEmpty()
     medias: string[];
 
     @ApiProperty()
     @IsNotEmpty()    
     keys: string[];            
+}
+
+export enum CATEGORIES {
+    IMAGE = "image", 
+    MP3 = "mp3", 
+    MP4 = "mp4", 
+    PDF = "pdf"
 }
 
 export class StartAuction {

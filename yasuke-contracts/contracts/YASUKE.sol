@@ -90,6 +90,11 @@ contract Yasuke is YasukeInterface {
 
         uint256 newBid = msg.value.add(fundsByBidder);
 
+        /**
+            TODO: The frontend needs to know about this.  
+            1. Add a new field to AuctionInfo that is set to true when the newBid >= sellNowPrice
+            2. Set  highest bidder and highest bid  
+         */ 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
             store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
 

@@ -2,7 +2,7 @@ import { Logger } from '@ethersproject/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { IssueToken, Media, TokenInfo } from 'src/models/entities.model';
+import { CATEGORIES, IssueToken, Media, TokenInfo } from 'src/models/entities.model';
 import { Repository } from 'typeorm';
 import { ImageService } from './image.service';
 import { YasukeService } from './yasuke.service';
@@ -106,12 +106,13 @@ export class TokenService {
 
                 if (dbToken !== undefined) {
                     reject("tokenId already exists");
-                }
+                }                
 
                 dbToken = await this.yasukeService.getTokenInfo(issueToken.tokenId);
                 this.logger.debug('Token From Blockchain');
                 this.logger.debug(dbToken);
                 dbToken.dateIssued = issueToken.dateIssued;
+                dbToken.category = issueToken.category;
                 dbToken = await this.tokenInfoRepository.save(dbToken);
 
                 // now let's save the images                

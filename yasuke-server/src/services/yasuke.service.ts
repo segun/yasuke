@@ -106,6 +106,7 @@ export class YasukeService {
                     dateIssued: 0,
                     hasActiveAuction: false,
                     lastAuctionId: 0,
+                    category: '',
                 }
 
                 this.logger.debug(tokenInfo);
