@@ -4,7 +4,7 @@ async function main() {
     const deployer = signers[0];
 
     let deployStore = true;
-    let storeAddress = undefined;
+    let storeAddress = "0x6313BeFE36d7A1F50A02B25c3e4D00EceD2D6A16";
 
     console.log(
         "Deploying contracts with the account:",

@@ -26,6 +26,7 @@ library Models {
         uint256 minimumBid;
         address[] bidders;
         uint256[] bids;
-        bool isActive;
+        bool started;
+        bool finished;
     }
 }

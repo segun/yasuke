@@ -36,6 +36,7 @@ interface StorageInterface {
     ) external;
 
     function isStarted(uint256 tokenId, uint256 auctionId) external view returns (bool);
+    function isFinished(uint256 tokenId, uint256 auctionId) external view returns (bool);
 
     function isInAuction(uint256 tokenId) external view returns (bool);
 
@@ -44,6 +45,12 @@ interface StorageInterface {
         uint256 auctionId,
         bool started
     ) external;
+
+    function setFinished(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool started
+    ) external;    
 
     function setInAuction(uint256 tokenId, bool started) external;
 

@@ -56,7 +56,8 @@ contract Yasuke is YasukeInterface {
                 minimumBid,
                 store.getBidders(tokenId, auctionId),
                 store.getBids(tokenId, auctionId),
-                true
+                true,
+                false
             );
         store.startAuction(ai);
     }
@@ -83,7 +84,7 @@ contract Yasuke is YasukeInterface {
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
         require(msg.value > 0, 'CNB0');
-        //require(msg.sender != t.ownerOf(tokenId), 'OCB');
+        require(msg.sender != t.ownerOf(tokenId), 'OCB');
 
         uint256 fundsByBidder = store.getFundsByBidder(tokenId, auctionId, msg.sender);
         uint256 sellNowPrice = store.getSellNowPrice(tokenId, auctionId);
@@ -126,7 +127,7 @@ contract Yasuke is YasukeInterface {
 
     function withdraw(uint256 tokenId, uint256 auctionId) public override {
         Token t = store.getToken(tokenId);
-        require(store.isStarted(tokenId, auctionId), 'ANS');
+        require(store.isStarted(tokenId, auctionId), 'BANS');
         require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
         bool cancelled = store.isCancelled(tokenId, auctionId);
         address owner = t.ownerOf(tokenId);
@@ -163,14 +164,14 @@ contract Yasuke is YasukeInterface {
 
             if (t.getIssuer() == owner) {
                 // owner is issuer, xendFees is xendFees + issuerFees 
-                xfp = store.getXendFeesPercentage() + store.getIssuerFeesPercentage();
+                xfp = store.getXendFeesPercentage().add(store.getIssuerFeesPercentage());
                 ifp = 0;
             }
 
-            uint256 xendFees = (xfp * withdrawalAmount) / 100;
-            uint256 issuerFees = (ifp * withdrawalAmount) / 100;            
+            uint256 xendFees = (xfp.mul(withdrawalAmount)).div(100);
+            uint256 issuerFees = (ifp.mul(withdrawalAmount)).div(100);            
 
-            withdrawalAmount = withdrawalAmount -  xendFees - issuerFees;
+            withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
 
             if(issuerFees > 0) {
                 bool sent = t.getIssuer().send(issuerFees);
@@ -201,7 +202,7 @@ contract Yasuke is YasukeInterface {
         // console.log("WE: %s, ACC: %s, WA: %d", withdrawEth, withdrawalAccount, withdrawalAmount);
         if (withdrawEth) {
             // if we get here, we can safely say the auction is finished
-            store.setStarted(tokenId, auctionId, false);
+            store.setFinished(tokenId, auctionId, false);
             require(withdrawalAmount > 0, 'ZW');
             bool sent = withdrawalAccount.send(withdrawalAmount);
 

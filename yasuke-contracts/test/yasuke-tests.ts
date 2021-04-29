@@ -57,7 +57,7 @@ describe('YASUKE', function () {
             const minBid = ethers.utils.parseEther("100");
             const sellNowPrice = ethers.utils.parseEther("1000");
             try {
-                await y2k.startAuction(x, auctionId, startBlock, endBlock, sellNowPrice, minBid);
+                await y2k.startAuction(x, auctionId, startBlock, endBlock, startBlock, sellNowPrice, minBid);
             } catch (e) {
                 console.log(e);
                 assert(false);
@@ -88,11 +88,12 @@ describe('YASUKE', function () {
             const owner = info[2];
             const startBlock = info[3].toNumber();
             const endBlock = info[4].toNumber();
-            const sellNowPrice = ethers.utils.formatEther(info[5]);
-            const highestBidder = info[6];
-            const highestBid = ethers.utils.formatEther(info[7]);
-            const cancelled = info[8];
-            const minBid = ethers.utils.formatEther(info[9]);
+            const currentBlock = info[5].toNumber();
+            const sellNowPrice = ethers.utils.formatEther(info[6]);
+            const highestBidder = info[7];
+            const highestBid = ethers.utils.formatEther(info[8]);
+            const cancelled = info[9];
+            const minBid = ethers.utils.formatEther(info[10]);
 
             assert.equal(tid, tokenIds[i]);
             assert.equal(owner, accounts[2].address);
@@ -182,11 +183,12 @@ describe('YASUKE', function () {
         const owner = info[2];
         const startBlock = info[3].toNumber();
         const endBlock = info[4].toNumber();
-        const sellNowPrice = ethers.utils.formatEther(info[5]);
-        const highestBidder = info[6];
-        const highestBid = ethers.utils.formatEther(info[7]);
-        const cancelled = info[8];
-        const minBid = ethers.utils.formatEther(info[9]);
+        const currentBlock = info[5].toNumber();
+        const sellNowPrice = ethers.utils.formatEther(info[6]);
+        const highestBidder = info[7];
+        const highestBid = ethers.utils.formatEther(info[8]);
+        const cancelled = info[9];
+        const minBid = ethers.utils.formatEther(info[10]);
 
         assert.equal(tid, tokenIds[0]);
         assert.equal(owner, accounts[2].address);
@@ -208,7 +210,7 @@ describe('YASUKE', function () {
             await y2k.withdraw(tokenIds[0], auctionId);
             balance = await ethers.provider.getBalance(accounts[2].address);
             const balanceAfter = Math.round(+ethers.utils.formatEther(balance));
-            assert.equal(balanceAfter, (balanceBefore + 108.0));
+            assert.equal(balanceAfter < (balanceBefore + 108.0) && balanceAfter > balanceBefore, true);
         } catch (e) {
             console.log(e);
             assert(false);
@@ -228,7 +230,7 @@ describe('YASUKE', function () {
         let y2k = await yasuke.connect(accounts[7]);
         try {
             let info = await yasuke.getTokenInfo(tokenIds[0]);
-            assert.equal(info[1], accounts[2].address);
+            assert.equal(info[1], accounts[2].address);            
             await y2k.withdraw(tokenIds[0], auctionId);
             info = await yasuke.getTokenInfo(tokenIds[0]);
             assert.equal(info[1], accounts[7].address);
@@ -274,7 +276,7 @@ describe('YASUKE', function () {
         const sellNowPrice = ethers.utils.parseEther("1000");
         auctionId = 99;
         try {
-            await y2k.startAuction(tokenIds[0], auctionId, startBlock, endBlock, sellNowPrice, minBid);
+            await y2k.startAuction(tokenIds[0], auctionId, startBlock, endBlock, startBlock, sellNowPrice, minBid);
         } catch (e) {
             console.log(e);
             assert(false);

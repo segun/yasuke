@@ -20,6 +20,7 @@ contract Storage is StorageInterface {
     mapping(uint256 => mapping(uint256 => mapping(address => uint256))) internal fundsByBidder;
     mapping(uint256 => mapping(uint256 => bool)) internal cancelled;
     mapping(uint256 => mapping(uint256 => bool)) internal started;
+    mapping(uint256 => mapping(uint256 => bool)) internal finished;
     mapping(uint256 => bool) internal inAuction;
     mapping(uint256 => mapping(uint256 => uint256)) internal minimumBid;
     mapping(uint256 => Token) internal tokens;
@@ -99,6 +100,8 @@ contract Storage is StorageInterface {
         minimumBid[tokenId][auctionId] = ai.minimumBid;
         highestBid[tokenId][auctionId] = ai.minimumBid;
         started[tokenId][auctionId] = true;
+        finished[tokenId][auctionId] = false;
+        cancelled[tokenId][auctionId] = false;
         inAuction[tokenId] = true;
     }
 
@@ -118,7 +121,8 @@ contract Storage is StorageInterface {
                 minimumBid[tokenId][auctionId],
                 bidders[tokenId][auctionId],
                 bids[tokenId][auctionId],
-                started[tokenId][auctionId]
+                started[tokenId][auctionId],
+                finished[tokenId][auctionId]
             );
 
         return ai;
@@ -250,6 +254,10 @@ contract Storage is StorageInterface {
         return started[tokenId][auctionId];
     }
 
+    function isFinished(uint256 tokenId, uint256 auctionId) public view override returns (bool) {
+        return finished[tokenId][auctionId];
+    }
+
     function setStarted(
         uint256 tokenId,
         uint256 auctionId,
@@ -259,6 +267,16 @@ contract Storage is StorageInterface {
         started[tokenId][auctionId] = _started;
         inAuction[tokenId] = _started;
     }
+
+    function setFinished(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool _finished
+    ) public override {
+        require(msg.sender == admin, "You can't do that");
+        finished[tokenId][auctionId] = _finished;
+        inAuction[tokenId] = _finished;
+    }    
 
     function setInAuction(uint256 tokenId, bool _inAuction) public override {
         require(msg.sender == admin, "You can't do that");
