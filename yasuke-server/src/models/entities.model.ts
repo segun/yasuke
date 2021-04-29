@@ -73,20 +73,20 @@ export class AuctionInfo {
     @Column({width: 20, type: 'bigint'})
     currentBlock: number;
 
-    @Column({width: 20, type: 'bigint'})
-    sellNowPrice: number;
+    @Column()
+    sellNowPrice: string;
 
     @Column()    
     highestBidder: string;
 
-    @Column({width: 20, type: 'bigint'})  
-    highestBid: number;
+    @Column()  
+    highestBid: string;
 
     @Column()    
     cancelled: boolean;
 
-    @Column({width: 20, type: 'bigint'})
-    minimumBid: number;
+    @Column()
+    minimumBid: string;
 
     @Column({default: false})
     isActive: boolean;
