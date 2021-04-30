@@ -39,16 +39,16 @@ export class AuthGuard implements CanActivate {
     }
 
     if (roles.indexOf('admin') >= 0) {
-      return decrypted === process.env.AUTH_TOKEN;
+      return decrypted === process.env.ENCRYPTED;
     }
 
     if (roles.indexOf('api') >= 0) {
-      return decrypted === process.env.AUTH_TOKEN;
+      return decrypted === process.env.ENCRYPTED;
     }
 
     switch (handler) {
       case 'someHandlerWithASpecialRole':
-        if (decrypted === process.env.AUTH_TOKEN) {
+        if (decrypted === process.env.ENCRYPTED) {
           return true;
         }
     }
