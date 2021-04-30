@@ -86,4 +86,14 @@ export class YasukeController {
             route: '/v3/assets',
         }, tokenId));
     }
+
+    @Get('get-block')
+    async getBlock(): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.getBlock());
+    }
+
+    @Get('get-account-balance/:address')
+    async getAccountBalance(@Param("address") address: string): Promise<Response> {
+        return ResponseUtils.getSuccessResponse(await this.yasukeService.getAccountBalance(address));
+    }    
 }

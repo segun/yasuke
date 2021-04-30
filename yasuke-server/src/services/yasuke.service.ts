@@ -37,6 +37,14 @@ export class YasukeService {
         this.yasukeContract = new ethers.Contract(this.yasukeAddress, this.yasukeAbi, this.provider);
     }
 
+    async getBlock(): Promise<number> {
+        return await this.provider.getBlockNumber();
+    }
+
+    async getAccountBalance(address: string): Promise<string> {
+        return ethers.utils.formatEther(await this.provider.getBalance(address));
+    }    
+
     async isIssuer(address: string): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
             try {
