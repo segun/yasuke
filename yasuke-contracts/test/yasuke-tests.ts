@@ -210,7 +210,7 @@ describe('YASUKE', function () {
             await y2k.withdraw(tokenIds[0], auctionId);
             balance = await ethers.provider.getBalance(accounts[2].address);
             const balanceAfter = Math.round(+ethers.utils.formatEther(balance));
-            assert.equal(balanceAfter < (balanceBefore + 108.0) && balanceAfter > balanceBefore, true);
+            assert.equal(balanceAfter <= (balanceBefore + 108.0) && balanceAfter >= balanceBefore, true);
         } catch (e) {
             console.log(e);
             assert(false);

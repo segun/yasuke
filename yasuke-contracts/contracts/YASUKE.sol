@@ -95,7 +95,8 @@ contract Yasuke is YasukeInterface {
             TODO: The frontend needs to know about this.  
             1. Add a new field to AuctionInfo that is set to true when the newBid >= sellNowPrice
             2. Set  highest bidder and highest bid  
-         */ 
+         */
+
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
             store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
 
@@ -109,7 +110,7 @@ contract Yasuke is YasukeInterface {
             // bid should now be max bid
             newBid = sellNowPrice;
         } else {
-            if(store.getHighestBid(tokenId, auctionId) != store.getMinimumBid(tokenId, auctionId)) {
+            if (store.getHighestBid(tokenId, auctionId) != store.getMinimumBid(tokenId, auctionId)) {
                 require(newBid > store.getHighestBid(tokenId, auctionId), 'BTL');
             } else {
                 require(newBid >= store.getHighestBid(tokenId, auctionId), 'BTL2');
@@ -123,6 +124,43 @@ contract Yasuke is YasukeInterface {
         store.addBid(tokenId, auctionId, newBid);
 
         emit LogBid(msg.sender, newBid);
+    }
+
+    function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal returns (bool, uint256) {
+        Token t = store.getToken(tokenId);
+        address owner = t.ownerOf(tokenId);
+        address highestBidder = store.getHighestBidder(tokenId, auctionId);
+
+        uint256 withdrawalAmount = store.getFundsByBidder(tokenId, auctionId, highestBidder);
+
+        store.setFundsByBidder(tokenId, auctionId, highestBidder, 0);
+
+        // we have to take fees
+        uint256 xfp = store.getXendFeesPercentage();
+        uint256 ifp = store.getIssuerFeesPercentage();
+
+        if (t.getIssuer() == owner) {
+            // owner is issuer, xendFees is xendFees + issuerFees
+            xfp = store.getXendFeesPercentage().add(store.getIssuerFeesPercentage());
+            ifp = 0;
+        }
+
+        uint256 xendFees = (xfp.mul(withdrawalAmount)).div(100);
+        uint256 issuerFees = (ifp.mul(withdrawalAmount)).div(100);
+
+        withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
+
+        if (issuerFees > 0) {
+            bool sent = t.getIssuer().send(issuerFees);
+            require(sent, 'CNSTI');
+        }
+
+        if (xendFees > 0) {
+            bool sent = store.getXendFeesAddress().send(xendFees);
+            require(sent, 'CNSTXND');
+        }
+
+        return (true, withdrawalAmount);
     }
 
     function withdraw(uint256 tokenId, uint256 auctionId) public override {
@@ -156,34 +194,8 @@ contract Yasuke is YasukeInterface {
             withdrawEth = true;
         } else if (withdrawalAccount == owner) {
             // withdraw funds from highest bidder
-            store.setFundsByBidder(tokenId, auctionId, highestBidder, 0);
-
-            // we have to take fees
-            uint256 xfp = store.getXendFeesPercentage();
-            uint256 ifp = store.getIssuerFeesPercentage();
-
-            if (t.getIssuer() == owner) {
-                // owner is issuer, xendFees is xendFees + issuerFees 
-                xfp = store.getXendFeesPercentage().add(store.getIssuerFeesPercentage());
-                ifp = 0;
-            }
-
-            uint256 xendFees = (xfp.mul(withdrawalAmount)).div(100);
-            uint256 issuerFees = (ifp.mul(withdrawalAmount)).div(100);            
-
-            withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
-
-            if(issuerFees > 0) {
-                bool sent = t.getIssuer().send(issuerFees);
-                require(sent, 'CNSTI');
-            }
-
-            if(xendFees > 0) {
-                bool sent = store.getXendFeesAddress().send(xendFees);
-                require(sent, 'CNSTXND');
-            }
-
-            withdrawEth = true;            
+            (, withdrawalAmount) = _withdrawOwner(tokenId, auctionId);                    
+            withdrawEth = true;
         } else if (withdrawalAccount == highestBidder) {
             if (cancelled) {
                 // do normal refund
@@ -193,6 +205,17 @@ contract Yasuke is YasukeInterface {
                 // transfer the token from owner to highest bidder
                 address tokenOwner = t.ownerOf(tokenId);
                 require(t.changeOwnership(tokenId, tokenOwner, highestBidder), 'CNCO');
+                
+                // withdraw owner
+                (, withdrawalAmount) = _withdrawOwner(tokenId, auctionId);      
+                if(withdrawalAmount > 0) {
+                    // owner have not withdrawn...withdraw for them                    
+                    store.setFinished(tokenId, auctionId, false);
+                    bool sent = withdrawalAccount.send(withdrawalAmount);
+                    require(sent, 'WF');
+                }                
+
+                // withdraw token
                 withdrawEth = false;
                 store.setInAuction(tokenId, false); // we can create new auction
                 store.setOwner(tokenId, highestBidder);
@@ -200,10 +223,9 @@ contract Yasuke is YasukeInterface {
         }
 
         // console.log("WE: %s, ACC: %s, WA: %d", withdrawEth, withdrawalAccount, withdrawalAmount);
-        if (withdrawEth) {
+        if (withdrawEth && withdrawalAmount > 0) {
             // if we get here, we can safely say the auction is finished
             store.setFinished(tokenId, auctionId, false);
-            require(withdrawalAmount > 0, 'ZW');
             bool sent = withdrawalAccount.send(withdrawalAmount);
 
             require(sent, 'WF');
