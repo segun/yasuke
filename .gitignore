@@ -88,3 +88,4 @@ env*
 *.bak
 ormconfig.json
 migration
+yasuke-contracts/bin/
