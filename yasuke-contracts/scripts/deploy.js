@@ -27,6 +27,13 @@ async function main() {
     console.log("YASUKE deployed to:", yasuke.address);
     const a = await yasuke.testUpgrade();
     console.log(`Upgrade Successful with ${a}`);
+
+    const data = {
+        "address": yasuke.address,
+        "abi": yasuke.interface.format('json')
+    };
+
+    console.log(data);
 }
 
 main()

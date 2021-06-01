@@ -10,14 +10,17 @@ import { ImageService } from './services/image.service';
 import { YasukeService } from './services/yasuke.service';
 import { TokenService } from './services/token.service';
 import { AuctionService } from './services/auction.service';
+import { ICOController } from './controllers/ico.controller';
+import { ICOService } from './services/ico.service';
+import { Whitelist } from './models/whitelist.model';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot(),
-    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media]),    
+    TypeOrmModule.forFeature([Issuer, TokenInfo, AuctionInfo, Media, Whitelist]),    
   ],
-  controllers: [YasukeController],
+  controllers: [YasukeController, ICOController],
   providers: [
     {
       provide: APP_GUARD,
@@ -27,6 +30,7 @@ import { AuctionService } from './services/auction.service';
     ImageService,
     TokenService,
     AuctionService,
+    ICOService,
   ],
 })
 export class AppModule {}
