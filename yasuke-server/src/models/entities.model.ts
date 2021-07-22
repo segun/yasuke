@@ -1,172 +1,180 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
-import { Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
-@Entity("tokenInfo")
-@Unique("token_info_idx", ["tokenId", "contractAddress"])
+@Entity('tokenInfo')
+@Unique('token_info_idx', ['tokenId', 'contractAddress'])
 export class TokenInfo {
-    @PrimaryGeneratedColumn()
-    id?: number;    
+  @PrimaryGeneratedColumn()
+  id?: number;
 
-    @Index("tokenId-idx") 
-    @Column({width: 20, type: 'bigint'})
-    tokenId: number;
+  @Index('tokenId-idx')
+  @Column({ width: 20, type: 'bigint' })
+  tokenId: number;
 
-    @Index("owner-idx") 
-    @Column()    
-    owner: string;
+  @Index('owner-idx')
+  @Column()
+  owner: string;
 
-    @Index("issuer-idx") 
-    @Column()        
-    issuer: string;
+  @Index('issuer-idx')
+  @Column()
+  issuer: string;
 
-    @Index("contract-idx") 
-    @Column()    
-    contractAddress: string;
+  @Index('contract-idx')
+  @Column()
+  contractAddress: string;
 
-    @OneToMany(() => Media, media => media.tokenInfo)
-    media: Media[];       
-    
-    @Column()
-    symbol: string;
+  @OneToMany(() => Media, (media) => media.tokenInfo)
+  media: Media[];
 
-    @Column()
-    name: string;
+  @Column()
+  symbol: string;
 
-    @Column({width: 20, type: 'bigint'})
-    dateIssued: number;
+  @Column()
+  name: string;
 
-    @Column()
-    hasActiveAuction: boolean;
+  @Column({ width: 20, type: 'bigint' })
+  dateIssued: number;
 
-    @Column()
-    lastAuctionId: number;
+  @Column()
+  hasActiveAuction: boolean;
 
-    @Column()
-    category: string;
+  @Column()
+  lastAuctionId: number;
+
+  @Column()
+  category: string;
 }
 
-@Entity("auctionInfo")
-@Unique("auction_info_idx", ["auctionId"])
+@Entity('auctionInfo')
+@Unique('auction_info_idx', ['auctionId'])
 export class AuctionInfo {
-    @PrimaryGeneratedColumn()
-    id?: number;    
+  @PrimaryGeneratedColumn()
+  id?: number;
 
-    @Index("auctionId-idx") 
-    @Column({width: 20, type: 'bigint'})
-    auctionId: number;
+  @Index('auctionId-idx')
+  @Column({ width: 20, type: 'bigint' })
+  auctionId: number;
 
-    @Index("tokenId-idx") 
-    @Column({width: 20, type: 'bigint'})
-    tokenId: number;
+  @Index('tokenId-idx')
+  @Column({ width: 20, type: 'bigint' })
+  tokenId: number;
 
-    @Index("owner-idx") 
-    @Column()
-    owner: string;
+  @Index('owner-idx')
+  @Column()
+  owner: string;
 
-    @Column({width: 20, type: 'bigint'})
-    startBlock: number;
+  @Column({ width: 20, type: 'bigint' })
+  startBlock: number;
 
-    @Column({width: 20, type: 'bigint'})
-    endBlock: number;
+  @Column({ width: 20, type: 'bigint' })
+  endBlock: number;
 
-    @Column({width: 20, type: 'bigint'})
-    currentBlock: number;
+  @Column({ width: 20, type: 'bigint' })
+  currentBlock: number;
 
-    @Column()
-    sellNowPrice: string;
+  @Column()
+  sellNowPrice: string;
 
-    @Column()    
-    highestBidder: string;
+  @Column()
+  highestBidder: string;
 
-    @Column()  
-    highestBid: string;
+  @Column()
+  highestBid: string;
 
-    @Column()    
-    cancelled: boolean;
+  @Column()
+  cancelled: boolean;
 
-    @Column()
-    minimumBid: string;
+  @Column()
+  minimumBid: string;
 
-    @Column({default: false})
-    isActive: boolean;
+  @Column({ default: false })
+  isActive: boolean;
 
-    @Column()
-    startDate?: string;
+  @Column()
+  startDate?: string;
 
-    @Column()
-    endDate?: string;    
+  @Column()
+  endDate?: string;
 
-    bids: Bid[];       
-    _bidders?: string[];
-    _bids?: number[];
+  bids: Bid[];
+  _bidders?: string[];
+  _bids?: number[];
 }
 
 export class Bid {
-    auctionId: number;
-    tokenId: number;
-    bid: number;
-    bidder: string;
+  auctionId: number;
+  tokenId: number;
+  bid: number;
+  bidder: string;
 }
 
-@Entity("media")
+@Entity('media')
 export class Media {
-    @PrimaryGeneratedColumn()
-    id?: number;    
+  @PrimaryGeneratedColumn()
+  id?: number;
 
-    @Column()
-    mediaKey: string;        
+  @Column()
+  mediaKey: string;
 
-    @Column()
-    media: string;        
+  @Column()
+  media: string;
 
-    @ManyToOne(() => TokenInfo, tokenInfo => tokenInfo.media)
-    tokenInfo: TokenInfo;
+  @ManyToOne(() => TokenInfo, (tokenInfo) => tokenInfo.media)
+  tokenInfo: TokenInfo;
 }
 
 export class IssueToken {
-    @ApiProperty()
-    @Column({width: 20, type: 'bigint'})
-    tokenId: number;
+  @ApiProperty()
+  @Column({ width: 20, type: 'bigint' })
+  tokenId: number;
 
-    @ApiProperty()
-    @Column({width: 20, type: 'bigint'})
-    dateIssued: number;
+  @ApiProperty()
+  @Column({ width: 20, type: 'bigint' })
+  dateIssued: number;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    category: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  category: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    medias: string[];
+  @ApiProperty()
+  @IsNotEmpty()
+  medias: string[];
 
-    @ApiProperty()
-    @IsNotEmpty()    
-    keys: string[];            
+  @ApiProperty()
+  @IsNotEmpty()
+  keys: string[];
 }
 
 export enum CATEGORIES {
-    IMAGE = "image", 
-    MP3 = "mp3", 
-    MP4 = "mp4", 
-    PDF = "pdf"
+  IMAGE = 'image',
+  MP3 = 'mp3',
+  MP4 = 'mp4',
+  PDF = 'pdf',
 }
 
 export class StartAuction {
-    @ApiProperty()
-    @IsNotEmpty()    
-    tokenId: number;
+  @ApiProperty()
+  @IsNotEmpty()
+  tokenId: number;
 
-    @ApiProperty()
-    @IsNotEmpty()    
-    auctionId: number;    
+  @ApiProperty()
+  @IsNotEmpty()
+  auctionId: number;
 
-    @ApiProperty()
-    @IsNotEmpty()    
-    startDate: string;    
+  @ApiProperty()
+  @IsNotEmpty()
+  startDate: string;
 
-    @ApiProperty()
-    @IsNotEmpty()    
-    endDate: string;    
+  @ApiProperty()
+  @IsNotEmpty()
+  endDate: string;
 }

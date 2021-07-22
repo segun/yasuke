@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
+import { Buyer } from 'src/models/buyer.model';
 import { IssueToken, StartAuction } from 'src/models/entities.model';
 import { Issuer } from 'src/models/issuer.model';
 import { AuctionService } from 'src/services/auction.service';
@@ -49,6 +50,15 @@ export class YasukeController {
   async saveIssuer(@Body() issuer: Issuer): Promise<Response> {
     return ResponseUtils.getSuccessResponse(
       await this.yasukeService.saveIssuer(issuer),
+    );
+  }
+
+  @Post('/save-buyer')
+  @Roles('api')
+  @ApiSecurity('api-key')
+  async saveBuyer(@Body() buyer: Buyer): Promise<Response> {
+    return ResponseUtils.getSuccessResponse(
+      await this.yasukeService.saveBuyer(buyer),
     );
   }
 

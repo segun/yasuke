@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Issuer } from 'src/models/issuer.model';
 import { Utils } from 'src/utils';
 import { ImageService } from './image.service';
+import { Buyer } from 'src/models/buyer.model';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -22,6 +23,9 @@ export class YasukeService {
 
   @InjectRepository(Issuer)
   private issuerRepository: Repository<Issuer>;
+
+  @InjectRepository(Buyer)
+  private buyerRepository: Repository<Buyer>;
 
   private readonly logger = new Logger(YasukeService.name);
 
@@ -62,6 +66,46 @@ export class YasukeService {
         if (!dbIssuer.enabled) {
           reject('Issuer with blockchain address has been blocked');
         }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async saveBuyer(buyer: Buyer): Promise<Buyer> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let dbBuyer = await this.buyerRepository
+          .createQueryBuilder('buyer')
+          .where('blockchainAddress = :bad', { bad: buyer.blockchainAddress })
+          .getOne();
+
+        if (dbBuyer !== undefined) {
+          reject('Buyer with Blockchain Address already exists');
+        }
+
+        dbBuyer = await this.buyerRepository
+          .createQueryBuilder('buyer')
+          .where('phoneNumber = :bad', { bad: buyer.phoneNumber })
+          .getOne();
+        if (dbBuyer !== undefined) {
+          reject('Buyer with Phone Number already exists');
+        }
+
+        dbBuyer = await this.buyerRepository
+          .createQueryBuilder('buyer')
+          .where('email = :bad', { bad: buyer.email })
+          .getOne();
+
+        if (dbBuyer !== undefined) {
+          reject('Buyer with Email Address already exists');
+        }
+
+        buyer.enabled = true;
+
+        dbBuyer = await this.buyerRepository.save(buyer);
+
+        resolve(dbBuyer);
       } catch (error) {
         reject(error);
       }

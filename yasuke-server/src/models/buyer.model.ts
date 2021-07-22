@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 import { Column, Index, Entity, Unique, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('issuer')
-@Unique('issuer_idx', ['email', 'phoneNumber', 'blockchainAddress'])
-export class Issuer {
+@Entity('buyer')
+@Unique('buyer_idx', ['email', 'phoneNumber', 'blockchainAddress'])
+export class Buyer {
   @PrimaryGeneratedColumn()
   id?: number;
 
@@ -43,4 +43,34 @@ export class Issuer {
 
   @Column()
   enabled: boolean;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  country: string;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  zipCode: string;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  state: string;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  city: string;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  street: string;
+
+  @Column()
+  @ApiProperty()
+  @IsNotEmpty()
+  houseNumber: string;
 }
