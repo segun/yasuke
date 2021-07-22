@@ -18,7 +18,9 @@ export class YasukeController {
     private yasukeService: YasukeService,
     private tokenService: TokenService,
     private auctionService: AuctionService,
-  ) {}
+  ) {
+    // do nothing
+  }
 
   @Get('/get-token-info/:tokenId')
   async getTokenInfo(@Param('tokenId') tokenId: number): Promise<Response> {
@@ -50,6 +52,22 @@ export class YasukeController {
   async saveIssuer(@Body() issuer: Issuer): Promise<Response> {
     return ResponseUtils.getSuccessResponse(
       await this.yasukeService.saveIssuer(issuer),
+    );
+  }
+
+  @Get('/buyer/by-email/:address')
+  async geteBuyerByEmail(@Param('address') address: string): Promise<Response> {
+    return ResponseUtils.getSuccessResponse(
+      await this.yasukeService.getBuyerByEmail(address),
+    );
+  }
+
+  @Get('/buyer/by-blockchain-address/:address')
+  async geteBuyerByBlockchainAddress(
+    @Param('address') address: string,
+  ): Promise<Response> {
+    return ResponseUtils.getSuccessResponse(
+      await this.yasukeService.getBuyerByBlockchainAddress(address),
     );
   }
 

@@ -72,6 +72,45 @@ export class YasukeService {
     });
   }
 
+  private async getBuyer(by: string, value: string): Promise<Buyer> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const dbBuyer = await this.buyerRepository
+          .createQueryBuilder('buyer')
+          .where(`${by} = :bad`, { bad: value })
+          .getOne();
+
+        if (dbBuyer !== undefined) {
+          reject(`Buyer with ${by}: ${value} not found`);
+        } else {
+          resolve(dbBuyer);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async getBuyerByEmail(address: string): Promise<Buyer> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        resolve(this.getBuyer('email', address));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async getBuyerByBlockchainAddress(address: string): Promise<Buyer> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        resolve(this.getBuyer('blockchainAddress', address));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   async saveBuyer(buyer: Buyer): Promise<Buyer> {
     return new Promise(async (resolve, reject) => {
       try {
