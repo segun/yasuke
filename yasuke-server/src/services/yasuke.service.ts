@@ -80,7 +80,7 @@ export class YasukeService {
           .where(`${by} = :bad`, { bad: value })
           .getOne();
 
-        if (dbBuyer !== undefined) {
+        if (dbBuyer === undefined) {
           reject(`Buyer with ${by}: ${value} not found`);
         } else {
           resolve(dbBuyer);
