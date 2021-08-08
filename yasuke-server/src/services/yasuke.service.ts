@@ -206,6 +206,9 @@ export class YasukeService {
           hasActiveAuction: false,
           lastAuctionId: 0,
           category: '',
+          sold: false,
+          description: '',
+          assetType: ''
         };
 
         this.logger.debug(tokenInfo);

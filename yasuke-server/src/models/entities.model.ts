@@ -52,6 +52,15 @@ export class TokenInfo {
 
   @Column()
   category: string;
+
+  @Column()
+  sold: boolean;
+
+  @Column()
+  description: string;
+
+  @Column()
+  assetType: string;  
 }
 
 @Entity('auctionInfo')
@@ -144,6 +153,14 @@ export class IssueToken {
   @ApiProperty()
   @IsNotEmpty()
   category: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  assetType: string;
 
   @ApiProperty()
   @IsNotEmpty()

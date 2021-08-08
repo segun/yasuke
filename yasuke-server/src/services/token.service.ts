@@ -112,6 +112,26 @@ export class TokenService {
         return paginate<TokenInfo>(qb, options);
     }
 
+    async toggleSold(tokenId: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dbToken = await this.tokenInfoRepository
+                    .createQueryBuilder('tokenInfo')
+                    .where('tokenId = :tid', { tid: tokenId })
+                    .getOne();
+                if (dbToken === undefined) {
+                    reject('Token with tokenId not found');
+                }
+
+                dbToken.sold = !dbToken.sold;
+                await this.tokenInfoRepository.save(dbToken);
+                resolve(dbToken.sold);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     async issueToken(issueToken: IssueToken): Promise<TokenInfo> {
         return new Promise(async (resolve, reject) => {
             try {
@@ -129,6 +149,8 @@ export class TokenService {
                 this.logger.debug(dbToken);
                 dbToken.dateIssued = issueToken.dateIssued;
                 dbToken.category = issueToken.category;
+                dbToken.description = issueToken.description;
+                dbToken.assetType = issueToken.assetType;
                 dbToken = await this.tokenInfoRepository.save(dbToken);
 
                 // now let's save the images

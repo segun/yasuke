@@ -96,6 +96,15 @@ export class YasukeController {
     );
   }
 
+  @Post(':tokenId/toggle-sold')
+  @Roles('api')
+  @ApiSecurity('api-key')
+  async setSold(@Param('tokenId') tokenId: number): Promise<Response> {
+    return ResponseUtils.getSuccessResponse(
+      await this.tokenService.toggleSold(tokenId),
+    );
+  }
+
   @Get('list-tokens')
   async listTokens(
     @Query('page') page: number,
