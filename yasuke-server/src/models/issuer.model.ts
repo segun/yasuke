@@ -43,4 +43,34 @@ export class Issuer {
 
   @Column()
   enabled: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  bankName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  bankAddress: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  accountName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  accountNumber: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  bankCode?: string = "0";
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  IBAN?: string = "0";
 }
