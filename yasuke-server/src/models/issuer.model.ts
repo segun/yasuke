@@ -58,11 +58,7 @@ export class Issuer {
 
   @ApiProperty()
   @Column()
-  bankAddress: string;
-
-  @ApiProperty()
-  @Column()
-  bankCode: string;
+  bankAddress?: string = ' ';
 
   @ApiProperty()
   @Column()
@@ -74,30 +70,10 @@ export class Issuer {
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  bankName: string;
+  bankCode?: string = '0';
 
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  bankAddress: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Column()
-  accountName: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Column()
-  accountNumber: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Column()
-  bankCode?: string = "0";
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Column()
-  IBAN?: string = "0";
+  IBAN?: string = '0';
 }
