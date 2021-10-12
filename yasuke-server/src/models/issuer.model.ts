@@ -41,6 +41,33 @@ export class Issuer {
   @Column()
   blockchainAddress: string;
 
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  bankName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  accountName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Column()
+  accountNumber: string;
+
+  @ApiProperty()
+  @Column()
+  bankAddress: string;
+
+  @ApiProperty()
+  @Column()
+  bankCode: string;
+
+  @ApiProperty()
+  @Column()
+  iban: string;
+
   @Column()
   enabled: boolean;
 
