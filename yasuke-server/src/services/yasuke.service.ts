@@ -66,6 +66,8 @@ export class YasukeService {
         if (!dbIssuer.enabled) {
           reject('Issuer with blockchain address has been blocked');
         }
+
+        resolve(true);
       } catch (error) {
         reject(error);
       }
@@ -208,7 +210,7 @@ export class YasukeService {
           category: '',
           sold: false,
           description: '',
-          assetType: ''
+          assetType: '',
         };
 
         this.logger.debug(tokenInfo);

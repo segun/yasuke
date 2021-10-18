@@ -62,7 +62,7 @@ export class Issuer {
 
   @ApiProperty()
   @Column()
-  iban: string;
+  iban?: string = '0';
 
   @Column()
   enabled: boolean;
@@ -71,9 +71,4 @@ export class Issuer {
   @IsNotEmpty()
   @Column()
   bankCode?: string = '0';
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Column()
-  IBAN?: string = '0';
 }
