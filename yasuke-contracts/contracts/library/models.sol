@@ -28,5 +28,6 @@ library Models {
         uint256[] bids;
         bool started;
         bool finished;
+        bool sellNowTriggered;
     }
 }

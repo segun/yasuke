@@ -240,34 +240,6 @@ describe('YASUKE', function () {
         }
     });
 
-    it('should withdraw other bidders', async () => {
-        for (let i = 3; i < 7; i++) {
-            try {
-                let balance = await ethers.provider.getBalance(accounts[i].address);
-                const balanceBefore = Math.round(+ethers.utils.formatEther(balance));
-                let y2k = await yasuke.connect(accounts[i]);
-                await y2k.withdraw(tokenIds[0], auctionId);
-                balance = await ethers.provider.getBalance(accounts[i].address);
-                const balanceAfter = Math.round(+ethers.utils.formatEther(balance));
-                assert.isAbove(balanceAfter, balanceBefore);
-            } catch (e) {
-                console.log(e);
-                assert(false);
-            }
-        }
-    });
-
-    it('should fail to withdraw other bidders after withdraw', async () => {
-        for (let i = 3; i < 7; i++) {
-            try {
-                let y2k = await yasuke.connect(accounts[i]);
-                await y2k.withdraw(tokenIds[0], auctionId);
-            } catch (e) {
-                assert.notEqual(e, undefined);
-            }
-        }
-    });
-
     it('should start another auction from bought token', async () => {
         const startBlock = 1;
         const endBlock = 200;

@@ -11,12 +11,6 @@ interface StorageInterface {
 
     function getAuction(uint256 tokenId, uint256 auctionId) external view returns (Models.AuctionInfo memory);
 
-    function getFundsByBidder(
-        uint256 tokenId,
-        uint256 auctionId,
-        address sender
-    ) external view returns (uint256);
-
     function getSellNowPrice(uint256 tokenId, uint256 auctionId) external view returns (uint256);
 
     function getHighestBid(uint256 tokenId, uint256 auctionId) external view returns (uint256);
@@ -37,6 +31,7 @@ interface StorageInterface {
 
     function isStarted(uint256 tokenId, uint256 auctionId) external view returns (bool);
     function isFinished(uint256 tokenId, uint256 auctionId) external view returns (bool);
+    function isSellNowTriggered(uint256 tokenId, uint256 auctionId) external view returns (bool);
 
     function isInAuction(uint256 tokenId) external view returns (bool);
 
@@ -51,6 +46,12 @@ interface StorageInterface {
         uint256 auctionId,
         bool started
     ) external;    
+
+    function setSellNowTriggered(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool started
+    ) external;        
 
     function setInAuction(uint256 tokenId, bool started) external;
 
@@ -67,13 +68,6 @@ interface StorageInterface {
     ) external;
 
     function getEndBlock(uint256 tokenId, uint256 auctionId) external view returns (uint256);
-
-    function setFundsByBidder(
-        uint256 tokenId,
-        uint256 auctionId,
-        address sender,
-        uint256 newBid
-    ) external;
 
     function setHighestBidder(
         uint256 tokenId,

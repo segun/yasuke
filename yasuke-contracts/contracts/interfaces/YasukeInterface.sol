@@ -34,7 +34,7 @@ interface YasukeInterface {
 
     event LogBid(address, uint256);
 
-    event LogWithdrawal(address, address, uint256);
+    event LogWithdrawal(address, uint256, uint256);
 
     event LogCanceled();
 }

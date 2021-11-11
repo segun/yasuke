@@ -17,10 +17,10 @@ contract Storage is StorageInterface {
     mapping(uint256 => mapping(uint256 => uint256[])) internal bids;
     mapping(uint256 => mapping(uint256 => address)) internal highestBidder;
     mapping(uint256 => mapping(uint256 => uint256)) internal highestBid;
-    mapping(uint256 => mapping(uint256 => mapping(address => uint256))) internal fundsByBidder;
     mapping(uint256 => mapping(uint256 => bool)) internal cancelled;
     mapping(uint256 => mapping(uint256 => bool)) internal started;
     mapping(uint256 => mapping(uint256 => bool)) internal finished;
+    mapping(uint256 => mapping(uint256 => bool)) internal sellNowTriggered;
     mapping(uint256 => bool) internal inAuction;
     mapping(uint256 => mapping(uint256 => uint256)) internal minimumBid;
     mapping(uint256 => Token) internal tokens;
@@ -101,6 +101,7 @@ contract Storage is StorageInterface {
         highestBid[tokenId][auctionId] = ai.minimumBid;
         started[tokenId][auctionId] = true;
         finished[tokenId][auctionId] = false;
+        sellNowTriggered[tokenId][auctionId] = false;
         cancelled[tokenId][auctionId] = false;
         inAuction[tokenId] = true;
     }
@@ -108,8 +109,8 @@ contract Storage is StorageInterface {
     function getAuction(uint256 tokenId, uint256 auctionId) public view override returns (Models.AuctionInfo memory) {
         Models.AuctionInfo memory ai =
             Models.AuctionInfo(
-                tokenId,
-                auctionId,
+                tokenId, 
+                auctionId,                               
                 owner[tokenId],
                 startBlock[tokenId][auctionId],
                 endBlock[tokenId][auctionId],
@@ -122,28 +123,11 @@ contract Storage is StorageInterface {
                 bidders[tokenId][auctionId],
                 bids[tokenId][auctionId],
                 started[tokenId][auctionId],
-                finished[tokenId][auctionId]
+                finished[tokenId][auctionId],
+                sellNowTriggered[tokenId][auctionId]
             );
 
         return ai;
-    }
-
-    function getFundsByBidder(
-        uint256 tokenId,
-        uint256 auctionId,
-        address sender
-    ) public view override returns (uint256) {
-        return fundsByBidder[tokenId][auctionId][sender];
-    }
-
-    function setFundsByBidder(
-        uint256 tokenId,
-        uint256 auctionId,
-        address sender,
-        uint256 newBid
-    ) public override {
-        require(msg.sender == admin, "You can't do that");
-        fundsByBidder[tokenId][auctionId][sender] = newBid;
     }
 
     function getSellNowPrice(uint256 tokenId, uint256 auctionId) public view override returns (uint256) {
@@ -258,6 +242,10 @@ contract Storage is StorageInterface {
         return finished[tokenId][auctionId];
     }
 
+    function isSellNowTriggered(uint256 tokenId, uint256 auctionId) public view override returns (bool) {
+        return sellNowTriggered[tokenId][auctionId];
+    }    
+
     function setStarted(
         uint256 tokenId,
         uint256 auctionId,
@@ -267,6 +255,16 @@ contract Storage is StorageInterface {
         started[tokenId][auctionId] = _started;
         inAuction[tokenId] = _started;
     }
+
+    function setSellNowTriggered(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool _sellNowTriggered
+    ) public override {
+        require(msg.sender == admin, "You can't do that");
+        sellNowTriggered[tokenId][auctionId] = _sellNowTriggered;
+        inAuction[tokenId] = _sellNowTriggered;
+    }    
 
     function setFinished(
         uint256 tokenId,
