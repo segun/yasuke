@@ -249,6 +249,7 @@ export class YasukeService {
           _bidders: ai[11],
           _bids: ai[12],
           isActive: ai[13],
+          sellNowTriggered: ai[14],
         };
 
         this.logger.debug(auctionInfo);

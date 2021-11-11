@@ -60,7 +60,7 @@ export class TokenInfo {
   description: string;
 
   @Column()
-  assetType: string;  
+  assetType: string;
 }
 
 @Entity('auctionInfo')
@@ -113,6 +113,9 @@ export class AuctionInfo {
 
   @Column()
   endDate?: string;
+
+  @Column({ default: false })
+  sellNowTriggered: boolean;
 
   bids: Bid[];
   _bidders?: string[];
