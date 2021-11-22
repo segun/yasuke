@@ -14,6 +14,7 @@ async function main() {
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
     if (deployStore) {
+        console.log("Deploying store. ");
         const Storage = await ethers.getContractFactory("Storage");
         store = await Storage.deploy();
         await store.deployed();

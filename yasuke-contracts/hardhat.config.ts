@@ -1,6 +1,6 @@
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-contract-sizer';
-
+import '@nomiclabs/hardhat-etherscan';
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -19,6 +19,14 @@ import 'hardhat-contract-sizer';
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: "M8W4UQJ3AE2XYK5R8VIDV9HRX4387M4BBX"
+  },  
+  bscscan: {
+    apiKey:"M8W4UQJ3AE2XYK5R8VIDV9HRX4387M4BBX"
+  },
   solidity: {
     version: "0.7.3",
     settings: {
@@ -35,7 +43,7 @@ module.exports = {
   },
   networks: {
     tbsc: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      url: "https://data-seed-prebsc-1-s3.binance.org:8545/",
       accounts: ["498ea38b2b6408be76d6c45b2939c2f195a16ac4bca7e62772fc549c7a798176"],
     },
     sokol: {
@@ -48,3 +56,8 @@ module.exports = {
   },
 };
 
+
+// M8W4UQJ3AE2XYK5R8VIDV9HRX4387M4BBX
+
+// Store deployed to: 0x961DF5777a70Ce13BEA9b9FEd94F71cCB9E1d4dC
+// YASUKE deployed to: 0xAeBCf9f55D996e201e545C9795363b4Be9BDb548
