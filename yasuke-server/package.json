@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "prestart": "cp -r src/abis dist/src/",
+    "prestart": "mkdir -p dist/src/abis && cp -r src/abis/* dist/src/abis/",
     "prestart:dev": "npm run build && npm run prestart",
     "prestart:prod": "npm run prestart",
     "build": "nest build",

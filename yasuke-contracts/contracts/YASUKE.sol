@@ -101,7 +101,7 @@ contract Yasuke is YasukeInterface {
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);
             if (difference > 0) {
-                bool sent = msg.sender.send(difference);
+                (bool sent, ) = payable(msg.sender).call{value: difference}();
                 require(sent, 'BFMB');
             }
 
@@ -119,7 +119,7 @@ contract Yasuke is YasukeInterface {
         // refund highest bidder their bid
         if (highestBidder != address(0)) {
             // this is the not first bid
-            bool sent = highestBidder.send(highestBid);
+            (bool sent, ) = payable(highestBidder).call{value: highestBid}();
             require(sent, 'HBRF');
         }
 
@@ -160,16 +160,16 @@ contract Yasuke is YasukeInterface {
         withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
 
         if (issuerFees > 0) {
-            bool sent = t.getIssuer().send(issuerFees);
+            (bool sent, ) = payable(t.getIssuer()).call{value: issuerFees}();
             require(sent, 'CNSTI');
         }
 
         if (xendFees > 0) {
-            bool sent = store.getXendFeesAddress().send(xendFees);
+            (bool sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}();
             require(sent, 'CNSTXND');
         }
 
-        bool sent = owner.send(withdrawalAmount);
+        (bool sent, ) = payable(owner).call{value: withdrawalAmount}();
         require(sent, 'WF');
     }
 
