@@ -92,7 +92,10 @@ export class AuctionService {
           auctionId,
         );
 
-        if (!blockchainAuction.isActive) {
+        if (
+          blockchainAuction.started === false ||
+          blockchainAuction.finished === true
+        ) {
           let dbToken = await this.tokenInfoRepository.findOne(tokenId);
 
           if (dbToken === undefined) {

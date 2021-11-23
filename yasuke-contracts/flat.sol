@@ -1,4 +1,6 @@
 //SPDX-License-Identifier: MIT-0
+
+//Nifty Row NFT Marketplace Contract (Project Yasuke)
 pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
@@ -1840,7 +1842,6 @@ interface StorageInterface {
 
     function getAdmin() external view returns (address);
 }
-
 
 contract Storage is StorageInterface {
     mapping(uint256 => address) internal owner;

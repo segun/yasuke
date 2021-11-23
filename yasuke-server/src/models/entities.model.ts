@@ -106,7 +106,10 @@ export class AuctionInfo {
   minimumBid: string;
 
   @Column({ default: false })
-  isActive: boolean;
+  started: boolean;
+
+  @Column({ default: false })
+  finished: boolean;
 
   @Column()
   startDate?: string;
