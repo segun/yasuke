@@ -178,7 +178,7 @@ describe('YASUKE', function () {
     })
 
     it('should get completed auction info', async () => {
-        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId)
+        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);
         const tid = info[0].toNumber()
         const aid = info[1].toNumber()
         const owner = info[2]
@@ -189,7 +189,7 @@ describe('YASUKE', function () {
         const highestBidder = info[7]
         const highestBid = ethers.utils.formatEther(info[8])
         const cancelled = info[9]
-        const minBid = ethers.utils.formatEther(info[10])
+        const minBid = ethers.utils.formatEther(info[10]);
 
         assert.equal(tid, tokenIds[0])
         assert.equal(owner, accounts[2].address)
@@ -234,7 +234,14 @@ describe('YASUKE', function () {
             assert.equal(info[1], accounts[2].address)
             await y2k.withdraw(tokenIds[0], auctionId)
             info = await yasuke.getTokenInfo(tokenIds[0])
-            assert.equal(info[1], accounts[7].address)
+            assert.equal(info[1], accounts[7].address);
+            
+            info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);
+            const started = info[13];
+            const finished = info[14];
+            assert.isFalse(started);
+            assert.isTrue(finished);            
+
         } catch (e) {
             console.log(e)
             assert(false)
