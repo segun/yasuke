@@ -78,17 +78,20 @@ export class TokenService {
   }
 
   async checkTokenOwnership(owner: string): Promise<boolean> {
+    console.log('Checking Token Ownership...', owner);
     const qb = this.tokenInfoRepository.createQueryBuilder('tokenInfo');
     qb.leftJoinAndSelect('tokenInfo.media', 'media');
     qb.where('owner = :owner', { owner: owner });
     const ownerTokens = await qb.getMany();
 
     for (let token of ownerTokens) {
+      console.log('dbTokenOwner: ', token.owner);
       let blockToken = await this.yasukeService.getTokenInfo(token.id);
+      console.log('blockTokenOwner: ', blockToken.owner);
       if (blockToken.owner !== owner) {
         //Update the owner in the database
         token.owner = blockToken.owner;
-        this.tokenInfoRepository.save(token);
+        await this.tokenInfoRepository.save(token);
       }
     }
 
@@ -99,18 +102,10 @@ export class TokenService {
     options: IPaginationOptions,
     owner: string,
   ): Promise<Pagination<TokenInfo>> {
+    await this.checkTokenOwnership(owner);
     const qb = this.tokenInfoRepository.createQueryBuilder('tokenInfo');
     qb.leftJoinAndSelect('tokenInfo.media', 'media');
     qb.where('owner = :owner', { owner: owner });
-    this.checkTokenOwnership(owner).then(
-      (x) => {
-        this.logger.debug('Checking token Ownership completed successfully');
-      },
-      (error) => {
-        this.logger.debug('Checking token Ownership errored out');
-        this.logger.debug(error);
-      },
-    );
 
     return paginate<TokenInfo>(qb, options);
   }
