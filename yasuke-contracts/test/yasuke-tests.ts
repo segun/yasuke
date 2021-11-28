@@ -84,6 +84,7 @@ describe('YASUKE', function () {
     it('should get auction info', async () => {
         for (let i = 0; i < tokenIds.length; i++) {
             const info = await yasuke.getAuctionInfo(tokenIds[i], auctionId)
+            console.log(info);
             const tid = info[0].toNumber()
             const aid = info[1].toNumber()
             const owner = info[2]
@@ -178,7 +179,7 @@ describe('YASUKE', function () {
     })
 
     it('should get completed auction info', async () => {
-        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);
+        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);    
         const tid = info[0].toNumber()
         const aid = info[1].toNumber()
         const owner = info[2]
@@ -235,7 +236,7 @@ describe('YASUKE', function () {
             await y2k.withdraw(tokenIds[0], auctionId)
             info = await yasuke.getTokenInfo(tokenIds[0])
             assert.equal(info[1], accounts[7].address);
-            
+
             info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);
             const started = info[13];
             const finished = info[14];
