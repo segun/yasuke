@@ -137,6 +137,15 @@ export class YasukeController {
     );
   }
 
+  @Post('change-token-ownership/:tokenId')
+  @Roles('api')
+  @ApiSecurity('api-key')
+  async changeTokenOwnership(@Param('tokenId') tokenId: number) {
+    return ResponseUtils.getSuccessResponse(
+      await this.tokenService.changeTokenOwnership(tokenId),
+    );
+  }
+
   @Post('start-auction')
   @Roles('api')
   @ApiSecurity('api-key')

@@ -6,6 +6,7 @@ import {
   paginate,
   Pagination,
 } from 'nestjs-typeorm-paginate';
+import { resolve } from 'path';
 import {
   CATEGORIES,
   IssueToken,
@@ -77,35 +78,33 @@ export class TokenService {
     return paginate<TokenInfo>(qb, options);
   }
 
-  async checkTokenOwnership(owner: string): Promise<boolean> {
-    console.log('Checking Token Ownership...', owner);
-    const qb = this.tokenInfoRepository.createQueryBuilder('tokenInfo');
-    qb.leftJoinAndSelect('tokenInfo.media', 'media');
-    qb.where('owner = :owner', { owner: owner });
-    const ownerTokens = await qb.getMany();
+  async changeTokenOwnership(tokenId: number): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let blockToken = await this.yasukeService.getTokenInfo(tokenId);
+        let dbToken = await this.tokenInfoRepository
+          .createQueryBuilder('tokenInfo')
+          .where('tokenId = :tid', { tid: tokenId })
+          .getOne();
 
-    for (let token of ownerTokens) {
-      console.log('dbTokenOwner: ', token.owner);
-      let blockToken = await this.yasukeService.getTokenInfo(token.id);
-      console.log('blockTokenOwner: ', blockToken.owner);
-      if (blockToken.owner !== owner) {
-        //Update the owner in the database
-        token.owner = blockToken.owner;
-        await this.tokenInfoRepository.save(token);
+        if (blockToken.owner.toLowerCase() !== dbToken.owner.toLowerCase()) {
+          dbToken.owner = blockToken.owner;
+          await this.tokenInfoRepository.save(dbToken);
+        }
+      } catch (error) {
+        reject(error);
       }
-    }
-
-    return true;
+      resolve(true);
+    });
   }
 
   async listTokensByOwner(
     options: IPaginationOptions,
     owner: string,
   ): Promise<Pagination<TokenInfo>> {
-    await this.checkTokenOwnership(owner);
     const qb = this.tokenInfoRepository.createQueryBuilder('tokenInfo');
     qb.leftJoinAndSelect('tokenInfo.media', 'media');
-    qb.where('owner = :owner', { owner: owner });
+    qb.where('LOWER(owner) = :owner', { owner: owner.toLowerCase() });
 
     return paginate<TokenInfo>(qb, options);
   }
