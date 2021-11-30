@@ -96,7 +96,11 @@ export class AuctionService {
           blockchainAuction.started === false ||
           blockchainAuction.finished === true
         ) {
-          let dbToken = await this.tokenInfoRepository.findOne(tokenId);
+          let dbToken = await this.tokenInfoRepository
+            .createQueryBuilder('tokenInfo')
+            .where('tokenId = :tid', { tid: tokenId })
+            .leftJoinAndSelect('tokenInfo.media', 'media')
+            .getOne();
 
           if (dbToken === undefined) {
             reject('Token with token id not found');
