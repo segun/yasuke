@@ -234,7 +234,7 @@ library SafeMath {
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
-        return msg.sender;
+        return payable(msg.sender);
     }
 
     function _msgData() internal view virtual returns (bytes memory) {
@@ -1867,7 +1867,7 @@ contract Storage is StorageInterface {
 
     uint256 internal xendFeesPercentage = 5;
     uint256 internal issuerFeesPercentage = 10;
-    address payable internal xendFeesAddress = 0x616B6c01DFeA4AF613326FDF683429f43CEe86FD;
+    address payable internal xendFeesAddress = payable(0x616B6c01DFeA4AF613326FDF683429f43CEe86FD);
 
     function setXendFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
@@ -2139,6 +2139,11 @@ contract Yasuke is YasukeInterface {
         store.setAdmin(address(this), msg.sender);
     }
 
+    function upgrade(address storeAddress) public {
+        store = StorageInterface(storeAddress);
+        store.setAdmin(address(this), msg.sender);
+    }
+
     function testUpgrade() public view returns (address, address) {
         require(store.echo(), 'UF');
         return (store.getAdmin(), store.getParent());
@@ -2212,12 +2217,12 @@ contract Yasuke is YasukeInterface {
             2. Set  highest bidder and highest bid  
          */
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
+            store.setEndBlock(tokenId, auctionId, block.number - 1); // forces the auction to end
 
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);
             if (difference > 0) {
-                (bool sent, ) = payable(msg.sender).call{value: difference}("");
+                (bool sent, ) = payable(msg.sender).call{value: difference}('');
                 require(sent, 'BFMB');
             }
 
@@ -2235,7 +2240,7 @@ contract Yasuke is YasukeInterface {
         // refund highest bidder their bid
         if (highestBidder != address(0)) {
             // this is the not first bid
-            (bool sent, ) = payable(highestBidder).call{value: highestBid}("");
+            (bool sent, ) = payable(highestBidder).call{value: highestBid}('');
             require(sent, 'HBRF');
         }
 
@@ -2245,6 +2250,46 @@ contract Yasuke is YasukeInterface {
         store.addBid(tokenId, auctionId, newBid);
 
         emit LogBid(msg.sender, newBid);
+
+        if (newBid >= sellNowPrice && sellNowPrice != 0) {
+            _withdrawal(tokenId, auctionId, false);
+        }
+    }
+
+    function _withdrawal(uint256 tokenId, uint256 auctionId, bool withdrawOwner) internal {
+        Token t = store.getToken(tokenId);
+        require(store.isStarted(tokenId, auctionId), 'BANS');
+        require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
+        bool cancelled = store.isCancelled(tokenId, auctionId);
+        address owner = t.ownerOf(tokenId);
+        address highestBidder = store.getHighestBidder(tokenId, auctionId);
+        uint256 highestBid = store.getHighestBid(tokenId, auctionId);
+
+        if (cancelled) {
+            // owner can not withdraw anything
+            require(msg.sender != owner, 'AWC');
+        }
+
+        if (msg.sender == owner) {
+            // withdraw funds from highest bidder
+            _withdrawOwner(tokenId, auctionId);
+        } else if (msg.sender == highestBidder) {
+            // transfer the token from owner to highest bidder
+            require(t.changeOwnership(tokenId, owner, highestBidder), 'CNCO');
+
+            // withdraw owner
+            if(withdrawOwner) {
+                _withdrawOwner(tokenId, auctionId);
+            }
+            store.setInAuction(tokenId, false); // we can create new auction
+            store.setOwner(tokenId, highestBidder);
+            store.setFinished(tokenId, auctionId, true);
+            store.setStarted(tokenId, auctionId, false);
+            store.setHighestBidder(tokenId, auctionId, address(0));
+            store.setHighestBid(tokenId, auctionId, 0);
+        }
+
+        emit LogWithdrawal(msg.sender, tokenId, auctionId);
     }
 
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
@@ -2276,50 +2321,21 @@ contract Yasuke is YasukeInterface {
         withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
 
         if (issuerFees > 0) {
-            (bool sent, ) = payable(t.getIssuer()).call{value: issuerFees}("");
+            (bool sent, ) = payable(t.getIssuer()).call{value: issuerFees}('');
             require(sent, 'CNSTI');
         }
 
         if (xendFees > 0) {
-            (bool sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}("");
+            (bool sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}('');
             require(sent, 'CNSTXND');
         }
 
-        (bool sent, ) = payable(owner).call{value: withdrawalAmount}("");
+        (bool sent, ) = payable(owner).call{value: withdrawalAmount}('');
         require(sent, 'WF');
     }
 
     function withdraw(uint256 tokenId, uint256 auctionId) public override {
-        Token t = store.getToken(tokenId);
-        require(store.isStarted(tokenId, auctionId), 'BANS');
-        require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
-        bool cancelled = store.isCancelled(tokenId, auctionId);
-        address owner = t.ownerOf(tokenId);
-        address highestBidder = store.getHighestBidder(tokenId, auctionId);
-        uint256 highestBid = store.getHighestBid(tokenId, auctionId);
-
-        if (cancelled) {
-            // owner can not withdraw anything
-            require(msg.sender != owner, 'AWC');
-        }
-
-        if (msg.sender == owner) {
-            // withdraw funds from highest bidder
-            _withdrawOwner(tokenId, auctionId);
-        } else if (msg.sender == highestBidder) {
-            // transfer the token from owner to highest bidder
-            require(t.changeOwnership(tokenId, owner, highestBidder), 'CNCO');
-
-            // withdraw owner
-            _withdrawOwner(tokenId, auctionId);
-            store.setInAuction(tokenId, false); // we can create new auction
-            store.setOwner(tokenId, highestBidder);
-            store.setFinished(tokenId, auctionId, false);
-            store.setHighestBidder(tokenId, auctionId, address(0));
-            store.setHighestBid(tokenId, auctionId, 0);
-        }
-
-        emit LogWithdrawal(msg.sender, tokenId, auctionId);
+        _withdrawal(tokenId, auctionId, true);
     }
 
     // TODO: Check if there are no bids before cancelling.

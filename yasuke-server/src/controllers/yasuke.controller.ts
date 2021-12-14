@@ -10,8 +10,8 @@ import { TokenService } from 'src/services/token.service';
 import { YasukeService } from 'src/services/yasuke.service';
 import { Response, ResponseUtils } from 'src/utils';
 
-@ApiTags('yasuke')
-@Controller('yasuke')
+@ApiTags('harmony')
+@Controller('harmony')
 export class YasukeController {
   constructor(
     private configService: ConfigService,
