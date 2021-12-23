@@ -6,13 +6,7 @@ import {
   paginate,
   Pagination,
 } from 'nestjs-typeorm-paginate';
-import { resolve } from 'path';
-import {
-  CATEGORIES,
-  IssueToken,
-  Media,
-  TokenInfo,
-} from 'src/models/entities.model';
+import { IssueToken, Media, TokenInfo } from 'src/models/entities.model';
 import { Repository } from 'typeorm';
 import { ImageService } from './image.service';
 import { YasukeService } from './yasuke.service';
@@ -104,10 +98,11 @@ export class TokenService {
     options: IPaginationOptions,
     owner: string,
   ): Promise<Pagination<TokenInfo>> {
-    const qb = this.tokenInfoRepository.createQueryBuilder('tokenInfo');
-    qb.leftJoinAndSelect('tokenInfo.media', 'media');
-    qb.where('LOWER(owner) = :owner', { owner: owner.toLowerCase() });
-
+    const qb = this.tokenInfoRepository
+      .createQueryBuilder('tokenInfo')
+      .innerJoin('tokenInfo.media', 'media')
+      .where('LOWER(owner) = :owner', { owner: owner.toLowerCase() })
+      .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
   }
 
