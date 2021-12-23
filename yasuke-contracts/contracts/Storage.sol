@@ -79,17 +79,28 @@ contract Storage is StorageInterface {
         }
     }
 
-    function addToken(uint256 tokenId, Token token) public override {
-        require(msg.sender == admin, "You can't do that");
-        tokens[tokenId] = token;
+    function changeTokenOwner(uint256 tokenId, address _owner, address _highestBidder) public override {
+        Token t = getToken(tokenId);
+        require(t.changeOwnership(tokenId, _owner, _highestBidder), 'CNCO');
     }
 
-    function getToken(uint256 tokenId) public view override returns (Token) {
-        return tokens[tokenId];
+    function addToken(uint256 tokenId, address payable _owner, string memory uri, string memory name, string memory symbol) public override {
+        require(msg.sender == admin, "You can't do that");
+        Token t = new Token(_owner, uri, name, symbol);
+        require(t.mint(tokenId), 'MF');
+
+        tokens[tokenId] = t;
     }
 
-    function startAuction(Models.AuctionInfo memory ai) public override {
+    function getToken(uint256 tokenId) internal view returns (Token) {
+        Token t = tokens[tokenId];
+        require(address(t) != address(0), 'TINF');
+        return t;
+    }
+
+    function startAuction(Models.AuctionInfo memory ai, address sender) public override {
         require(msg.sender == admin, "You can't do that");
+        require(getOwner(ai.tokenId) == sender, 'WO');
         uint256 tokenId = ai.tokenId;
         uint256 auctionId = ai.auctionId;
         owner[tokenId] = ai.owner;
@@ -212,8 +223,34 @@ contract Storage is StorageInterface {
     }
 
     function getOwner(uint256 tokenId) public view override returns (address) {
-        return owner[tokenId];
+        Token t = getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        return t.ownerOf(tokenId);
     }
+
+    function getIssuer(uint256 tokenId) public view override returns (address) {
+        Token t = getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        return t.getIssuer();
+    } 
+
+    function getAddress(uint256 tokenId) public view override returns (address) {
+        Token t = getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        return address(t);
+    }  
+
+    function getName(uint256 tokenId) public view override returns (string memory) {
+        Token t = getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        return t.name();
+    }      
+
+    function getSymbol(uint256 tokenId) public view override returns (string memory) {
+        Token t = getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        return t.symbol();
+    }          
 
     function setOwner(uint256 tokenId, address _owner) public override {
         require(msg.sender == admin, "You can't do that");

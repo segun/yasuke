@@ -2,12 +2,11 @@
 pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 import '../library/models.sol';
-import '../Token.sol';
 
 interface StorageInterface {
     function setAdmin(address _admin, address parent) external;
 
-    function startAuction(Models.AuctionInfo memory ai) external;
+    function startAuction(Models.AuctionInfo memory ai, address sender) external;
 
     function getAuction(uint256 tokenId, uint256 auctionId) external view returns (Models.AuctionInfo memory);
 
@@ -97,9 +96,7 @@ interface StorageInterface {
 
     function getBidders(uint256 tokenId, uint256 auctionId) external view returns (address[] memory);
 
-    function addToken(uint256 tokenId, Token token) external;
-
-    function getToken(uint256 tokenId) external view returns (Token);
+    function addToken(uint256 tokenId, address payable owner, string memory uri, string memory name, string memory symbol) external;
 
     function setXendFeesPercentage(uint256 percentage) external;
 
@@ -118,4 +115,14 @@ interface StorageInterface {
     function getParent() external view returns (address);
 
     function getAdmin() external view returns (address);
+
+    function changeTokenOwner(uint256 tokenId, address owner, address highestBidder) external;
+
+    function getIssuer(uint256 tokenId) external view returns (address);
+
+    function getAddress(uint256 tokenId) external view returns (address);
+
+    function getName(uint256 tokenId) external view returns (string memory);
+
+    function getSymbol(uint256 tokenId) external view returns (string memory);
 }

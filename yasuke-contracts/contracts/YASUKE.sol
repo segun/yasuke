@@ -3,7 +3,6 @@ pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
-import './Storage.sol';
 import './library/console.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
@@ -41,8 +40,6 @@ contract Yasuke is YasukeInterface {
         uint256 sellNowPrice,
         uint256 minimumBid
     ) public override {
-        Token t = store.getToken(tokenId);
-        require(t.ownerOf(tokenId) == msg.sender, 'WO');
         require(!store.isInAuction(tokenId), 'AIP');
         require(!store.isStarted(tokenId, auctionId), 'AAS');
         Models.AuctionInfo memory ai = Models.AuctionInfo(
@@ -63,7 +60,7 @@ contract Yasuke is YasukeInterface {
             false,
             false
         );
-        store.startAuction(ai);
+        store.startAuction(ai, msg.sender);
     }
 
     function issueToken(
@@ -73,9 +70,7 @@ contract Yasuke is YasukeInterface {
         string memory _name,
         string memory _symbol
     ) public override {
-        Token t = new Token(owner, _uri, _name, _symbol);
-        require(t.mint(tokenId), 'MF');
-        store.addToken(tokenId, t);
+        store.addToken(tokenId, owner, _uri, _name, _symbol);
         store.setOwner(tokenId, owner);
     }
 
@@ -85,10 +80,9 @@ contract Yasuke is YasukeInterface {
     }
 
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
-        Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
         require(msg.value > 0, 'CNB0');
-        require(msg.sender != t.ownerOf(tokenId), 'OCB');
+        require(msg.sender != store.getOwner(tokenId), 'OCB');
 
         uint256 sellNowPrice = store.getSellNowPrice(tokenId, auctionId);
 
@@ -135,18 +129,16 @@ contract Yasuke is YasukeInterface {
         emit LogBid(msg.sender, newBid);
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            _withdrawal(tokenId, auctionId, false);
+            _withdrawal(tokenId, auctionId, true);
         }
     }
 
     function _withdrawal(uint256 tokenId, uint256 auctionId, bool withdrawOwner) internal {
-        Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
         require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
         bool cancelled = store.isCancelled(tokenId, auctionId);
-        address owner = t.ownerOf(tokenId);
+        address owner = store.getOwner(tokenId);
         address highestBidder = store.getHighestBidder(tokenId, auctionId);
-        uint256 highestBid = store.getHighestBid(tokenId, auctionId);
 
         if (cancelled) {
             // owner can not withdraw anything
@@ -158,7 +150,7 @@ contract Yasuke is YasukeInterface {
             _withdrawOwner(tokenId, auctionId);
         } else if (msg.sender == highestBidder) {
             // transfer the token from owner to highest bidder
-            require(t.changeOwnership(tokenId, owner, highestBidder), 'CNCO');
+            store.changeTokenOwner(tokenId, owner, highestBidder);
 
             // withdraw owner
             if(withdrawOwner) {
@@ -176,9 +168,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
-        Token t = store.getToken(tokenId);
-        address payable owner = payable(t.ownerOf(tokenId));
-        address highestBidder = store.getHighestBidder(tokenId, auctionId);
+        address payable owner = payable(store.getOwner(tokenId));
 
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
 
@@ -192,7 +182,7 @@ contract Yasuke is YasukeInterface {
         uint256 xfp = store.getXendFeesPercentage();
         uint256 ifp = store.getIssuerFeesPercentage();
 
-        if (t.getIssuer() == owner) {
+        if (store.getIssuer(tokenId) == owner) {
             // owner is issuer, xendFees is xendFees + issuerFees
             xfp = store.getXendFeesPercentage().add(store.getIssuerFeesPercentage());
             ifp = 0;
@@ -204,7 +194,7 @@ contract Yasuke is YasukeInterface {
         withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
 
         if (issuerFees > 0) {
-            (bool sent, ) = payable(t.getIssuer()).call{value: issuerFees}('');
+            (bool sent, ) = payable(store.getIssuer(tokenId)).call{value: issuerFees}('');
             require(sent, 'CNSTI');
         }
 
@@ -229,10 +219,8 @@ contract Yasuke is YasukeInterface {
         emit LogCanceled();
     }
 
-    function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
-        Token t = store.getToken(tokenId);
-        require(address(t) != address(0), 'TINF');
-        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t), t.name(), t.symbol());
+    function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {        
+        Models.Asset memory a = Models.Asset(tokenId, store.getOwner(tokenId), store.getIssuer(tokenId), store.getAddress(tokenId), store.getName(tokenId), store.getSymbol(tokenId));
         return a;
     }
 

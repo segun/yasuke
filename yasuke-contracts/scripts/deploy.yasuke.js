@@ -13,7 +13,7 @@ async function main() {
     const Yasuke = await ethers.getContractFactory("Yasuke", deployer);
     
     // TODO: enter store address in the constructor
-    yasuke = await Yasuke.deploy('0x643A9ecF0504C85d4240a11F163Aa51d209241d3');
+    yasuke = await Yasuke.deploy('0xBd770416a3345F91E4B34576cb804a576fa48EB1');
 
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);    
