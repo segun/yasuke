@@ -75,7 +75,7 @@ export class TokenService {
   ): Promise<Pagination<TokenInfo>> {
     const qb = this.tokenInfoRepository
       .createQueryBuilder('tokenInfo')
-      .innerJoin('tokenInfo.media', 'media')
+      .leftJoinAndSelect('tokenInfo.media', 'media')
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
   }
