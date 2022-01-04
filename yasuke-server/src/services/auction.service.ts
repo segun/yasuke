@@ -19,7 +19,7 @@ import { YasukeService } from './yasuke.service';
 @Injectable()
 export class AuctionService {
   private readonly logger = new Logger(AuctionService.name);
-  constructor(private yasukeService: YasukeService) {}
+  constructor(private yasukeService: YasukeService) { }
 
   @InjectRepository(AuctionInfo)
   auctionInfoRepository: Repository<AuctionInfo>;
@@ -40,7 +40,7 @@ export class AuctionService {
           reject('Auction already exists for token');
         }
 
-        let dbToken = await this.tokenInfoRepository
+        const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: sa.tokenId })
           .getOne();
@@ -51,7 +51,7 @@ export class AuctionService {
           reject('Token with token id not found');
         }
 
-        let blockAuction = await this.yasukeService.getAuctionInfo(
+        const blockAuction = await this.yasukeService.getAuctionInfo(
           sa.tokenId,
           sa.auctionId,
         );
@@ -87,7 +87,7 @@ export class AuctionService {
   ): Promise<AuctionInfo> {
     return new Promise(async (resolve, reject) => {
       try {
-        let blockchainAuction = await this.yasukeService.getAuctionInfo(
+        const blockchainAuction = await this.yasukeService.getAuctionInfo(
           tokenId,
           auctionId,
         );
@@ -96,7 +96,7 @@ export class AuctionService {
           blockchainAuction.started === false ||
           blockchainAuction.finished === true
         ) {
-          let dbToken = await this.tokenInfoRepository
+          const dbToken = await this.tokenInfoRepository
             .createQueryBuilder('tokenInfo')
             .where('tokenId = :tid', { tid: tokenId })
             .leftJoinAndSelect('tokenInfo.media', 'media')
@@ -112,7 +112,7 @@ export class AuctionService {
           reject('Auction has ended');
         }
 
-        let dbAuction = await this.auctionInfoRepository
+        const dbAuction = await this.auctionInfoRepository
           .createQueryBuilder('auctionInfo')
           .where('tokenId = :tid', { tid: tokenId })
           .andWhere('auctionId = :aid', { aid: auctionId })
@@ -122,17 +122,15 @@ export class AuctionService {
           reject('Auction for Token not found');
         }
 
-        let _bids = blockchainAuction._bids;
-        let _bidders = blockchainAuction._bidders;
+        const _bids = blockchainAuction._bids;
+        const _bidders = blockchainAuction._bidders;
 
-        let count = 0;
-
-        let bids: Bid[] = [];
+        const bids: Bid[] = [];
 
         _bids.forEach((b, index) => {
-          let _bidder = _bidders[index];
-          let _bid = +ethers.utils.formatEther(b);
-          let dbBid: Bid = {
+          const _bidder = _bidders[index];
+          const _bid = +ethers.utils.formatEther(b);
+          const dbBid: Bid = {
             auctionId: auctionId,
             tokenId: tokenId,
             bid: _bid,

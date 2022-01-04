@@ -29,9 +29,9 @@ export class TokenService {
   async getTokenInfo(tokenId: number): Promise<TokenInfo> {
     return new Promise(async (resolve, reject) => {
       try {
-        let blockchainToken = await this.yasukeService.getTokenInfo(tokenId);
+        const blockchainToken = await this.yasukeService.getTokenInfo(tokenId);
 
-        let dbToken = await this.tokenInfoRepository
+        const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: tokenId })
           .leftJoinAndSelect('tokenInfo.media', 'media')
@@ -43,7 +43,7 @@ export class TokenService {
 
         this.logger.debug(dbToken.media);
 
-        let media = dbToken.media.map((x) => {
+        const media = dbToken.media.map((x) => {
           x.tokenInfo = undefined;
           return x;
         });
@@ -69,7 +69,7 @@ export class TokenService {
   ): Promise<Pagination<TokenInfo>> {
     const qb = this.tokenInfoRepository
       .createQueryBuilder('tokenInfo')
-      .innerJoin('tokenInfo.media', 'media')
+      .leftJoinAndSelect('tokenInfo.media', 'media')
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
   }
@@ -77,8 +77,8 @@ export class TokenService {
   async changeTokenOwnership(tokenId: number): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
-        let blockToken = await this.yasukeService.getTokenInfo(tokenId);
-        let dbToken = await this.tokenInfoRepository
+        const blockToken = await this.yasukeService.getTokenInfo(tokenId);
+        const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: tokenId })
           .getOne();
@@ -100,7 +100,7 @@ export class TokenService {
   ): Promise<Pagination<TokenInfo>> {
     const qb = this.tokenInfoRepository
       .createQueryBuilder('tokenInfo')
-      .innerJoin('tokenInfo.media', 'media')
+      .leftJoinAndSelect('tokenInfo.media', 'media')
       .where('LOWER(owner) = :owner', { owner: owner.toLowerCase() })
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
@@ -109,7 +109,7 @@ export class TokenService {
   async toggleSold(tokenId: number): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
-        let dbToken = await this.tokenInfoRepository
+        const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: tokenId })
           .getOne();
@@ -148,11 +148,11 @@ export class TokenService {
         dbToken = await this.tokenInfoRepository.save(dbToken);
 
         // now let's save the images
-        let medias: Media[] = [];
+        const medias: Media[] = [];
 
         if (issueToken.keys.length === issueToken.medias.length) {
           let count = 0;
-          for (let key of issueToken.keys) {
+          for (const key of issueToken.keys) {
             let dbMedia: Media = await this.mediaRepository
               .createQueryBuilder('media')
               .where('mediaKey = :key', { key: key })

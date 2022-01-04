@@ -40,10 +40,10 @@ export class ICOService {
 
                 if (dbWhitelist !== undefined) {
                     reject("Linked In URL already exists");
-                }     
-                
+                }
+
                 dbWhitelist = await this.whitelistRepository.save(whitelist);
-                
+
                 resolve(dbWhitelist);
             } catch (error) {
                 reject(error);
