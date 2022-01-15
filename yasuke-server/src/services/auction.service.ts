@@ -27,13 +27,14 @@ export class AuctionService {
   @InjectRepository(TokenInfo)
   tokenInfoRepository: Repository<TokenInfo>;
 
-  async startAuction(sa: StartAuction): Promise<AuctionInfo> {
+  async startAuction(sa: StartAuction, chain: string): Promise<AuctionInfo> {
     return new Promise(async (resolve, reject) => {
       try {
         let dbAuction = await this.auctionInfoRepository
           .createQueryBuilder('auctionInfo')
           .where('tokenId = :tid', { tid: sa.tokenId })
           .andWhere('auctionId = :aid', { aid: sa.auctionId })
+          .andWhere('chain = :chain', { chain: chain })
           .getOne();
 
         if (dbAuction !== undefined) {
@@ -54,6 +55,7 @@ export class AuctionService {
         const blockAuction = await this.yasukeService.getAuctionInfo(
           sa.tokenId,
           sa.auctionId,
+          chain,
         );
         blockAuction.startDate = sa.startDate;
         blockAuction.endDate = sa.endDate;
@@ -84,12 +86,14 @@ export class AuctionService {
   async getAuctionInfo(
     tokenId: number,
     auctionId: number,
+    chain: string,
   ): Promise<AuctionInfo> {
     return new Promise(async (resolve, reject) => {
       try {
         const blockchainAuction = await this.yasukeService.getAuctionInfo(
           tokenId,
           auctionId,
+          chain,
         );
 
         if (
@@ -99,6 +103,7 @@ export class AuctionService {
           const dbToken = await this.tokenInfoRepository
             .createQueryBuilder('tokenInfo')
             .where('tokenId = :tid', { tid: tokenId })
+            .andWhere('chain = :chain', { chain: chain })
             .leftJoinAndSelect('tokenInfo.media', 'media')
             .getOne();
 

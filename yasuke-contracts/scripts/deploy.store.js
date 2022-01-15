@@ -24,3 +24,8 @@ main()
         console.error(error);
         process.exit(1);
     });
+
+
+// Store deployed to: 0x47538d57b89e8a68edA04391D520103305338dB4
+// Store Address: 0x47538d57b89e8a68edA04391D520103305338dB4
+// Yasuke: 0xa0f3cE118aEC7b4188E033E7E7FeF0cc2280D84D

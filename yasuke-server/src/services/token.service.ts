@@ -18,7 +18,7 @@ export class TokenService {
   constructor(
     private imageService: ImageService,
     private yasukeService: YasukeService,
-  ) {}
+  ) { }
 
   @InjectRepository(TokenInfo)
   tokenInfoRepository: Repository<TokenInfo>;
@@ -26,14 +26,15 @@ export class TokenService {
   @InjectRepository(Media)
   mediaRepository: Repository<Media>;
 
-  async getTokenInfo(tokenId: number): Promise<TokenInfo> {
+  async getTokenInfo(tokenId: number, chain: string): Promise<TokenInfo> {
     return new Promise(async (resolve, reject) => {
       try {
-        const blockchainToken = await this.yasukeService.getTokenInfo(tokenId);
+        const blockchainToken = await this.yasukeService.getTokenInfo(tokenId, chain);
 
         const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: tokenId })
+          .andWhere('chain = :chain', { chain: chain })
           .leftJoinAndSelect('tokenInfo.media', 'media')
           .getOne();
 
@@ -65,21 +66,23 @@ export class TokenService {
   }
 
   async listTokens(
-    options: IPaginationOptions,
+    options: IPaginationOptions, chain: string
   ): Promise<Pagination<TokenInfo>> {
     const qb = this.tokenInfoRepository
       .createQueryBuilder('tokenInfo')
+      .where("chain = :chain", { chain: chain })
       .leftJoinAndSelect('tokenInfo.media', 'media')
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
   }
 
-  async changeTokenOwnership(tokenId: number): Promise<boolean> {
+  async changeTokenOwnership(tokenId: number, chain: string): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
-        const blockToken = await this.yasukeService.getTokenInfo(tokenId);
+        const blockToken = await this.yasukeService.getTokenInfo(tokenId, chain);
         const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
+          .andWhere('chain = :chain', { chain: chain })
           .where('tokenId = :tid', { tid: tokenId })
           .getOne();
 
@@ -97,21 +100,24 @@ export class TokenService {
   async listTokensByOwner(
     options: IPaginationOptions,
     owner: string,
+    chain: string
   ): Promise<Pagination<TokenInfo>> {
     const qb = this.tokenInfoRepository
       .createQueryBuilder('tokenInfo')
       .leftJoinAndSelect('tokenInfo.media', 'media')
       .where('LOWER(owner) = :owner', { owner: owner.toLowerCase() })
+      .andWhere("chain = :chain", { chain: chain })
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
   }
 
-  async toggleSold(tokenId: number): Promise<boolean> {
+  async toggleSold(tokenId: number, chain: string): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
         const dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: tokenId })
+          .andWhere('chain = :chain', { chain: chain })
           .getOne();
         if (dbToken === undefined) {
           reject('Token with tokenId not found');
@@ -126,19 +132,20 @@ export class TokenService {
     });
   }
 
-  async issueToken(issueToken: IssueToken): Promise<TokenInfo> {
+  async issueToken(issueToken: IssueToken, chain: string): Promise<TokenInfo> {
     return new Promise(async (resolve, reject) => {
       try {
         let dbToken = await this.tokenInfoRepository
           .createQueryBuilder('tokenInfo')
           .where('tokenId = :tid', { tid: issueToken.tokenId })
+          .andWhere('chain = :chain', { chain: chain })
           .getOne();
 
         if (dbToken !== undefined) {
           reject('tokenId already exists');
         }
 
-        dbToken = await this.yasukeService.getTokenInfo(issueToken.tokenId);
+        dbToken = await this.yasukeService.getTokenInfo(issueToken.tokenId, chain);
         this.logger.debug('Token From Blockchain');
         this.logger.debug(dbToken);
         dbToken.dateIssued = issueToken.dateIssued;

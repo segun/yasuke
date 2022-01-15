@@ -15,11 +15,11 @@ const fs = require('fs');
 
 @Injectable()
 export class YasukeService {
+  private web3Provider: string;
   provider: ethers.providers.JsonRpcProvider;
   yasukeContract: Contract;
   yasukeAddress: string;
   yasukeAbi: string;
-  webProvider: string;
 
   @InjectRepository(Issuer)
   private issuerRepository: Repository<Issuer>;
@@ -31,12 +31,44 @@ export class YasukeService {
 
   constructor(private configService: ConfigService) {
     this.logger.debug(ethers.utils.formatEther('600000000000000000'));
-    this.webProvider = this.configService.get<string>('WEB3_PROVIDER');
-    this.yasukeAddress = this.configService.get<string>('CONTRACT_ADDRESS');
-    this.provider = new ethers.providers.JsonRpcProvider(this.webProvider);
     this.yasukeAbi = JSON.parse(
       fs.readFileSync(path.resolve('src/abis/Yasuke.json'), 'utf8'),
     ).abi;
+  }
+
+  async connectWeb3(chain) {
+    let web3Key;
+    let contractAddressKey;
+
+    switch (chain) {
+      case 'polygon':
+        web3Key = 'POLYGON_WEB3_PROVIDER';
+        contractAddressKey = 'POLYGON_CONTRACT_ADDRESS';
+        break;
+      case 'harmony':
+        web3Key = 'HARMONY_WEB3_PROVIDER';
+        contractAddressKey = 'HARMONY_CONTRACT_ADDRESS';
+        break;
+      case 'aurora':
+        web3Key = 'AURORA_WEB3_PROVIDER';
+        contractAddressKey = 'AURORA_CONTRACT_ADDRESS';
+        break;
+      case 'bsc':
+        web3Key = 'BSC_WEB3_PROVIDER';
+        contractAddressKey = 'BSC_CONTRACT_ADDRESS';
+        break;
+    }
+
+    this.web3Provider = this.configService.get<string>(web3Key);
+    this.yasukeAddress = this.configService.get<string>(contractAddressKey);
+    this.provider = new ethers.providers.JsonRpcProvider(this.web3Provider);
+
+    console.log("web3Key: ", web3Key);
+    console.log("contractAddressKey: ", contractAddressKey);
+
+    console.log("web3Provider: ", this.web3Provider);
+    console.log("yasukeAddress: ", this.yasukeAddress);
+
     this.yasukeContract = new ethers.Contract(
       this.yasukeAddress,
       this.yasukeAbi,
@@ -190,7 +222,8 @@ export class YasukeService {
     });
   }
 
-  async getTokenInfo(tokenId: number): Promise<TokenInfo> {
+  async getTokenInfo(tokenId: number, chain: string): Promise<TokenInfo> {
+    await this.connectWeb3(chain);
     return new Promise(async (resolve, reject) => {
       try {
         const ti = await this.yasukeContract.getTokenInfo(tokenId);
@@ -211,6 +244,7 @@ export class YasukeService {
           sold: false,
           description: '',
           assetType: '',
+          chain: chain,
         };
 
         this.logger.debug(tokenInfo);
@@ -228,13 +262,16 @@ export class YasukeService {
   async getAuctionInfo(
     tokenId: number,
     auctionId: number,
+    chain: string,
   ): Promise<AuctionInfo> {
+    await this.connectWeb3(chain);
     return new Promise(async (resolve, reject) => {
       try {
         const ai = await this.yasukeContract.getAuctionInfo(tokenId, auctionId);
         this.logger.debug(`Auction Info From Blockchain: ${ai}`);
         const auctionInfo: AuctionInfo = {
           tokenId: ai[0].toNumber(),
+          chain: chain,
           auctionId: ai[1].toNumber(),
           owner: ai[2],
           startBlock: ai[3].toNumber(),

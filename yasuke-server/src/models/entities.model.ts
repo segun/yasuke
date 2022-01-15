@@ -20,6 +20,10 @@ export class TokenInfo {
   @Column({ width: 20, type: 'bigint' })
   tokenId: number;
 
+  @Index('chain-idx')
+  @Column()
+  chain: string;
+
   @Index('owner-idx')
   @Column()
   owner: string;
@@ -76,6 +80,10 @@ export class AuctionInfo {
   @Index('tokenId-idx')
   @Column({ width: 20, type: 'bigint' })
   tokenId: number;
+
+  @Index('chain-idx')
+  @Column()
+  chain: string;
 
   @Index('owner-idx')
   @Column()

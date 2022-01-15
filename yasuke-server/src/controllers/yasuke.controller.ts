@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -23,9 +23,12 @@ export class YasukeController {
   }
 
   @Get('/get-token-info/:tokenId')
-  async getTokenInfo(@Param('tokenId') tokenId: number): Promise<Response> {
+  async getTokenInfo(@Param('tokenId') tokenId: number, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.tokenService.getTokenInfo(tokenId),
+      await this.tokenService.getTokenInfo(tokenId, chain),
     );
   }
 
@@ -33,16 +36,39 @@ export class YasukeController {
   async getAuctionInfo(
     @Param('tokenId') tokenId: number,
     @Param('auctionId') auctionId: number,
+    @Headers('chain') chain: string
   ): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.auctionService.getAuctionInfo(tokenId, auctionId),
+      await this.auctionService.getAuctionInfo(tokenId, auctionId, chain),
     );
   }
 
   @Get('/get-contract-address')
-  async getContractAddress(): Promise<Response> {
+  async getContractAddress(@Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
+
+    let contractAddressKey = '';
+    switch (chain) {
+      case 'polygon':
+        contractAddressKey = 'POLYGON_CONTRACT_ADDRESS';
+        break;
+      case 'harmony':
+        contractAddressKey = 'HARMONY_CONTRACT_ADDRESS';
+        break;
+      case 'aurora':
+        contractAddressKey = 'AURORA_CONTRACT_ADDRESS';
+        break;
+      case 'bsc':
+        contractAddressKey = 'BSC_CONTRACT_ADDRESS';
+        break;
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.configService.get<string>('CONTRACT_ADDRESS'),
+      await this.configService.get<string>(contractAddressKey),
     );
   }
 
@@ -90,18 +116,24 @@ export class YasukeController {
   @Post('issue-token/')
   @Roles('api')
   @ApiSecurity('api-key')
-  async issueToken(@Body() issueToken: IssueToken): Promise<Response> {
+  async issueToken(@Body() issueToken: IssueToken, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.tokenService.issueToken(issueToken),
+      await this.tokenService.issueToken(issueToken, chain),
     );
   }
 
   @Post(':tokenId/toggle-sold')
   @Roles('api')
   @ApiSecurity('api-key')
-  async setSold(@Param('tokenId') tokenId: number): Promise<Response> {
+  async setSold(@Param('tokenId') tokenId: number, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.tokenService.toggleSold(tokenId),
+      await this.tokenService.toggleSold(tokenId, chain),
     );
   }
 
@@ -109,13 +141,14 @@ export class YasukeController {
   async listTokens(
     @Query('page') page: number,
     @Query('limit') limit: number,
+    @Headers('chain') chain: string
   ): Promise<Response> {
     return ResponseUtils.getSuccessResponse(
       await this.tokenService.listTokens({
         page,
         limit,
         route: '/v3/assets',
-      }),
+      }, chain),
     );
   }
 
@@ -124,6 +157,7 @@ export class YasukeController {
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Param('owner') owner: string,
+    @Headers('chain') chain: string
   ): Promise<Response> {
     return ResponseUtils.getSuccessResponse(
       await this.tokenService.listTokensByOwner(
@@ -133,6 +167,7 @@ export class YasukeController {
           route: '/v3/assets',
         },
         owner,
+        chain
       ),
     );
   }
@@ -140,18 +175,24 @@ export class YasukeController {
   @Post('change-token-ownership/:tokenId')
   @Roles('api')
   @ApiSecurity('api-key')
-  async changeTokenOwnership(@Param('tokenId') tokenId: number) {
+  async changeTokenOwnership(@Param('tokenId') tokenId: number, @Headers('chain') chain: string) {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.tokenService.changeTokenOwnership(tokenId),
+      await this.tokenService.changeTokenOwnership(tokenId, chain),
     );
   }
 
   @Post('start-auction')
   @Roles('api')
   @ApiSecurity('api-key')
-  async startAuction(@Body() sa: StartAuction): Promise<Response> {
+  async startAuction(@Body() sa: StartAuction, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
     return ResponseUtils.getSuccessResponse(
-      await this.auctionService.startAuction(sa),
+      await this.auctionService.startAuction(sa, chain),
     );
   }
 
