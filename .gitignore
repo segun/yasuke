@@ -89,3 +89,4 @@ env*
 ormconfig.json
 migration
 yasuke-contracts/bin/
+yasuke-contracts/hardhat.config.ts
