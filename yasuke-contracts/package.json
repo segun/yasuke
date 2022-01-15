@@ -10,7 +10,8 @@
     "deploy-localhost": "npx hardhat run --network localhost scripts/deploy.js",
     "deploy": "npx hardhat run scripts/deploy.js",
     "upgrade-yasuke": "npx hardhat run scripts/upgrade.js",
-    "deploy-yasuke": "npx hardhat run scripts/deploy.yasuke.js"
+    "deploy-yasuke": "npx hardhat run scripts/deploy.yasuke.js",
+    "deploy-store": "npx hardhat run scripts/deploy.store.js"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
