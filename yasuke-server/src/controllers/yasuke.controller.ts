@@ -52,7 +52,9 @@ export class YasukeController {
       chain = 'bsc';
     }
 
-    let contractAddressKey = `${chain.toUpperCase}_CONTRACT_ADDRESS`;
+    let contractAddressKey = `${chain.toUpperCase()}_CONTRACT_ADDRESS`;
+    console.log("contractAddressKey: ", contractAddressKey);
+
     return ResponseUtils.getSuccessResponse(
       await this.configService.get<string>(contractAddressKey),
     );
