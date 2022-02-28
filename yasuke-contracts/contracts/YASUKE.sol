@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
+import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import './Storage.sol';
 import './library/console.sol';
 import './library/models.sol';
@@ -141,7 +141,6 @@ contract Yasuke is YasukeInterface {
         bool cancelled = store.isCancelled(tokenId, auctionId);
         address owner = t.ownerOf(tokenId);
         address highestBidder = store.getHighestBidder(tokenId, auctionId);
-        uint256 highestBid = store.getHighestBid(tokenId, auctionId);
 
         if (cancelled) {
             // owner can not withdraw anything
@@ -173,8 +172,6 @@ contract Yasuke is YasukeInterface {
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
         Token t = store.getToken(tokenId);
         address payable owner = payable(t.ownerOf(tokenId));
-        address highestBidder = store.getHighestBidder(tokenId, auctionId);
-
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
 
         if (withdrawalAmount == 0) {
@@ -198,17 +195,18 @@ contract Yasuke is YasukeInterface {
 
         withdrawalAmount = withdrawalAmount.sub(xendFees).sub(issuerFees);
 
+        bool sent = false;
         if (issuerFees > 0) {
-            (bool sent, ) = payable(t.getIssuer()).call{value: issuerFees}('');
+            (sent, ) = payable(t.getIssuer()).call{value: issuerFees}('');
             require(sent, 'CNSTI');
         }
 
         if (xendFees > 0) {
-            (bool sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}('');
+            (sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}('');
             require(sent, 'CNSTXND');
         }
 
-        (bool sent, ) = payable(owner).call{value: withdrawalAmount}('');
+        (sent, ) = payable(owner).call{value: withdrawalAmount}('');
         require(sent, 'WF');
     }
 

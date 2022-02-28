@@ -20,9 +20,14 @@ async function main() {
   const deploy_yasuke = false;
   const upgrade_yasuke = false;
 
-  let storeAddress = "0xe2F1A18a63C7b95D242Fa2307297637b4D60c542";
-  let yasukeAddress = "0x346cd3f4d07FDcC38D0d72448b3E77DcB39D5A90";
-  let webProvider = "https://data-seed-prebsc-1-s1.binance.org:8545/";
+  let storeAddress = "0x6bd889b4D3E4325369C5e4f568f97794f2b07c06"; // aurora
+  let yasukeAddress = "0x973141E3E8F4B1429FE847c1348693062b208C2f"; // aurora
+
+  // let storeAddress = "0x9d37119ab4e84e1eb3e601db694aef1e0ab54af0"; // avax
+  // let yasukeAddress = "0x071c45daf813BF12F639FfA63ddf4d0d96C2f892"; // axax
+
+  let webProvider = "https://testnet.aurora.dev";
+  // let webProvider = "https://api.avax-test.network/ext/bc/C/rpc";
   let provider = new ethers.providers.JsonRpcProvider(webProvider);
   let yasukeAbi = JSON.parse(fs.readFileSync(path.resolve('./artifacts/contracts/Yasuke.sol/Yasuke.json'), 'utf8')).abi;
   let yasukeContract = new ethers.Contract(yasukeAddress, yasukeAbi, provider);
@@ -60,6 +65,7 @@ async function main() {
   const symbol = `TTITAN${x}`;
 
   try {
+    console.log(name, symbol);
     await yasuke.issueToken(x, accounts[0].address, uri, name, symbol);
     console.log(`Token ${x} issued`);
     const minBid = ethers.utils.parseEther("100");
@@ -67,12 +73,10 @@ async function main() {
     const blockTime = 3;
     const block = await provider.getBlock("latest");
     const startBlock = block.number;
-    console.log(startBlock);    
     const threeDays = (3 * 24 * 60 * 60) / blockTime;
     const endBlock = startBlock + threeDays;
-    console.log(endBlock);
     try {
-        await yasuke.startAuction(x, auctionId, startBlock, endBlock, sellNowPrice, minBid);
+        await yasuke.startAuction(x, auctionId, startBlock, endBlock, startBlock, sellNowPrice, minBid);
         console.log('Auction Started Successfully');
     } catch (e) {
         console.log(e);

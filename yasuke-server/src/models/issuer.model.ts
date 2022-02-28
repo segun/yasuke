@@ -28,7 +28,7 @@ export class Issuer {
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  middleName: string;
+  middleName?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -44,17 +44,17 @@ export class Issuer {
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  bankName: string;
+  bankName?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  accountName: string;
+  accountName?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @Column()
-  accountNumber: string;
+  accountNumber?: string;
 
   @ApiProperty()
   @Column()
@@ -65,7 +65,7 @@ export class Issuer {
   iban?: string = '0';
 
   @Column()
-  enabled: boolean;
+  enabled?: boolean;
 
   @ApiProperty()
   @IsNotEmpty()

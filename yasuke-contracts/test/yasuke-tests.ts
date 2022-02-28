@@ -84,7 +84,6 @@ describe('YASUKE', function () {
     it('should get auction info', async () => {
         for (let i = 0; i < tokenIds.length; i++) {
             const info = await yasuke.getAuctionInfo(tokenIds[i], auctionId)
-            console.log(info);
             const tid = info[0].toNumber()
             const aid = info[1].toNumber()
             const owner = info[2]

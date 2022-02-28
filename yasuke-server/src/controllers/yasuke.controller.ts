@@ -52,21 +52,7 @@ export class YasukeController {
       chain = 'bsc';
     }
 
-    let contractAddressKey = '';
-    switch (chain) {
-      case 'polygon':
-        contractAddressKey = 'POLYGON_CONTRACT_ADDRESS';
-        break;
-      case 'harmony':
-        contractAddressKey = 'HARMONY_CONTRACT_ADDRESS';
-        break;
-      case 'aurora':
-        contractAddressKey = 'AURORA_CONTRACT_ADDRESS';
-        break;
-      case 'bsc':
-        contractAddressKey = 'BSC_CONTRACT_ADDRESS';
-        break;
-    }
+    let contractAddressKey = `${chain.toUpperCase}_CONTRACT_ADDRESS`;
     return ResponseUtils.getSuccessResponse(
       await this.configService.get<string>(contractAddressKey),
     );

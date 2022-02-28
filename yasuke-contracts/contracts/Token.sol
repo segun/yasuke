@@ -3,7 +3,7 @@ pragma solidity >= 0.7.0 < 0.9.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import './library/console.sol';
 
 contract Token is ERC721 {
@@ -23,9 +23,12 @@ contract Token is ERC721 {
     function mint(uint256 tokenId) public returns (bool) {
         require(msg.sender == admin, 'Only admin can call this contract');
         _mint(owner, tokenId);   
-        allowSpending(tokenId);
-        _setTokenURI(tokenId, uri);
+        allowSpending(tokenId);        
         return true;          
+    }
+    
+    function _baseURI() override internal view returns (string memory) {
+        return uri;
     }
 
     function changeOwnership(uint tokenId, address from, address to) public returns (bool) {
