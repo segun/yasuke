@@ -37,27 +37,8 @@ export class YasukeService {
   }
 
   async connectWeb3(chain) {
-    let web3Key;
-    let contractAddressKey;
-
-    switch (chain) {
-      case 'polygon':
-        web3Key = 'POLYGON_WEB3_PROVIDER';
-        contractAddressKey = 'POLYGON_CONTRACT_ADDRESS';
-        break;
-      case 'harmony':
-        web3Key = 'HARMONY_WEB3_PROVIDER';
-        contractAddressKey = 'HARMONY_CONTRACT_ADDRESS';
-        break;
-      case 'aurora':
-        web3Key = 'AURORA_WEB3_PROVIDER';
-        contractAddressKey = 'AURORA_CONTRACT_ADDRESS';
-        break;
-      case 'bsc':
-        web3Key = 'BSC_WEB3_PROVIDER';
-        contractAddressKey = 'BSC_CONTRACT_ADDRESS';
-        break;
-    }
+    const contractAddressKey = `${chain.toUpperCase()}_CONTRACT_ADDRESS`;
+    const web3Key = `${chain.toUpperCase()}_WEB3_PROVIDER`;
 
     this.web3Provider = this.configService.get<string>(web3Key);
     this.yasukeAddress = this.configService.get<string>(contractAddressKey);
