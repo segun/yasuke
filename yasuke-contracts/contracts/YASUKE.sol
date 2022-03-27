@@ -111,13 +111,22 @@ contract Yasuke is YasukeInterface {
         // transfer the token from seller to buyer
         require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
 
-        (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice}('');
-        require(sent, 'BFMB');        
+        if (shouldBuyWithToken) {
+            bool result = IERC20(legalTender).transfer(address(0), noBiddingPrice);
+            require(result, 'CANB');
+        } else {
+            (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice}('');
+            require(sent, 'BFMB');
+        }
 
         emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
     }
 
-    function sellNow(uint256 tokenId, uint256 price, bool withToken) public override {
+    function sellNow(
+        uint256 tokenId,
+        uint256 price,
+        bool withToken
+    ) public override {
         require(!store.isInAuction(tokenId), 'ANE');
         require(!store.isInSale(tokenId), 'ANIS');
         Token t = store.getToken(tokenId);
@@ -276,7 +285,17 @@ contract Yasuke is YasukeInterface {
         bool isInAuction = store.isInAuction(tokenId);
         bool isInSale = store.isInSale(tokenId);
         uint256 price = store.getNoBiddingPrice(tokenId);
-        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t), t.name(), t.symbol(), isInAuction, isInSale, price);
+        Models.Asset memory a = Models.Asset(
+            tokenId,
+            t.ownerOf(tokenId),
+            t.getIssuer(),
+            address(t),
+            t.name(),
+            t.symbol(),
+            isInAuction,
+            isInSale,
+            price
+        );
         return a;
     }
 
