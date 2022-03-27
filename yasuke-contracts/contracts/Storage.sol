@@ -13,6 +13,8 @@ contract Storage is StorageInterface {
     mapping(uint256 => mapping(uint256 => uint256)) internal startBlock;
     mapping(uint256 => mapping(uint256 => uint256)) internal endBlock;
     mapping(uint256 => mapping(uint256 => uint256)) internal sellNowPrice;
+    mapping(uint256 => uint256) internal noBiddingPrice;
+    mapping(uint256 => bool) internal buyWithToken;
     mapping(uint256 => mapping(uint256 => address[])) internal bidders;
     mapping(uint256 => mapping(uint256 => uint256[])) internal bids;
     mapping(uint256 => mapping(uint256 => address)) internal highestBidder;
@@ -22,6 +24,7 @@ contract Storage is StorageInterface {
     mapping(uint256 => mapping(uint256 => bool)) internal finished;
     mapping(uint256 => mapping(uint256 => bool)) internal sellNowTriggered;
     mapping(uint256 => bool) internal inAuction;
+    mapping(uint256 => bool) internal inSale;
     mapping(uint256 => mapping(uint256 => uint256)) internal minimumBid;
     mapping(uint256 => Token) internal tokens;
 
@@ -104,7 +107,29 @@ contract Storage is StorageInterface {
         sellNowTriggered[tokenId][auctionId] = false;
         cancelled[tokenId][auctionId] = false;
         inAuction[tokenId] = true;
+        inSale[tokenId] = false;
     }
+
+    function startSale(uint256 tokenId, uint256 price, bool withToken) public override {
+        require(msg.sender == admin, "You can't do that");
+        noBiddingPrice[tokenId] = price;
+        inAuction[tokenId] = false;
+        inSale[tokenId] = true;
+        buyWithToken[tokenId] = withToken;
+    }
+
+    function getNoBiddingPrice(uint256 tokenId) public override view returns (uint256) {
+        return noBiddingPrice[tokenId];
+    }
+
+    function getBuyWithToken(uint256 tokenId) public override view returns (bool) {
+        return buyWithToken[tokenId];
+    }
+
+    function setBuyWithToken(uint256 tokenId, bool bwt) public override {
+        require(msg.sender == admin, "You can't do that");
+        buyWithToken[tokenId] = bwt;
+    }    
 
     function getAuction(uint256 tokenId, uint256 auctionId) public view override returns (Models.AuctionInfo memory) {
         Models.AuctionInfo memory ai =
@@ -281,9 +306,23 @@ contract Storage is StorageInterface {
         inAuction[tokenId] = _inAuction;
     }
 
+    function setInSale(uint256 tokenId, bool _inSale) public override {
+        require(msg.sender == admin, "You can't do that");
+        inSale[tokenId] = _inSale;
+    }  
+
+    function setNoBiddingPrice(uint256 tokenId, uint256 nbp) public override {
+        require(msg.sender == admin, "You can't do that");
+        noBiddingPrice[tokenId] = nbp;
+    }
+
     function isInAuction(uint256 tokenId) public view override returns (bool) {
         return inAuction[tokenId];
     }
+
+    function isInSale(uint256 tokenId) public view override returns (bool) {
+        return inSale[tokenId];
+    }    
 
     function echo() public view override returns (bool) {
         console.log('2. Sender: %s, Admin: %s, Parent: %s', msg.sender, admin, parent);

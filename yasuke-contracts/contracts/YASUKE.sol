@@ -8,6 +8,7 @@ import './library/console.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
 import './interfaces/YasukeInterface.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // TODO: Calculate Fees
 contract Yasuke is YasukeInterface {
@@ -15,11 +16,13 @@ contract Yasuke is YasukeInterface {
     address internal minter;
 
     StorageInterface internal store;
+    IERC20 internal legalTender;
 
-    constructor(address storeAddress) {
+    constructor(address storeAddress, address _legalTender) {
         minter = msg.sender;
         store = StorageInterface(storeAddress);
         store.setAdmin(address(this), msg.sender);
+        legalTender = IERC20(_legalTender);
     }
 
     function upgrade(address storeAddress) public {
@@ -84,6 +87,47 @@ contract Yasuke is YasukeInterface {
         store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
     }
 
+    function buyNow(uint256 tokenId) public payable override {
+        Token t = store.getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        require(msg.sender != t.ownerOf(tokenId), 'OCB');
+        uint256 noBiddingPrice = store.getNoBiddingPrice(tokenId);
+        bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
+
+        if (shouldBuyWithToken) {
+            // does this contract have allowance to spend legaltender
+            uint256 allowance = IERC20(legalTender).allowance(msg.sender, address(this));
+            require(allowance >= noBiddingPrice, 'no allowance');
+        } else {
+            require(msg.value >= noBiddingPrice, 'PTL');
+        }
+
+        require(store.isInSale(tokenId), 'BANS');
+        address owner = t.ownerOf(tokenId);
+        address buyer = msg.sender;
+
+        store.setInSale(tokenId, false);
+        store.setNoBiddingPrice(tokenId, 0);
+        // transfer the token from seller to buyer
+        require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
+
+        (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice}('');
+        require(sent, 'BFMB');        
+
+        emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
+    }
+
+    function sellNow(uint256 tokenId, uint256 price, bool withToken) public override {
+        require(!store.isInAuction(tokenId), 'ANE');
+        require(!store.isInSale(tokenId), 'ANIS');
+        Token t = store.getToken(tokenId);
+        require(address(t) != address(0), 'TINF');
+        require(msg.sender == t.ownerOf(tokenId), 'OCB');
+        store.startSale(tokenId, price, withToken);
+
+        emit OnSale(msg.sender, tokenId);
+    }
+
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
@@ -134,7 +178,11 @@ contract Yasuke is YasukeInterface {
         }
     }
 
-    function _withdrawal(uint256 tokenId, uint256 auctionId, bool withdrawOwner) internal {
+    function _withdrawal(
+        uint256 tokenId,
+        uint256 auctionId,
+        bool withdrawOwner
+    ) internal {
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
         require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
@@ -155,7 +203,7 @@ contract Yasuke is YasukeInterface {
             require(t.changeOwnership(tokenId, owner, highestBidder), 'CNCO');
 
             // withdraw owner
-            if(withdrawOwner) {
+            if (withdrawOwner) {
                 _withdrawOwner(tokenId, auctionId);
             }
             store.setInAuction(tokenId, false); // we can create new auction
@@ -225,7 +273,10 @@ contract Yasuke is YasukeInterface {
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
-        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t), t.name(), t.symbol());
+        bool isInAuction = store.isInAuction(tokenId);
+        bool isInSale = store.isInSale(tokenId);
+        uint256 price = store.getNoBiddingPrice(tokenId);
+        Models.Asset memory a = Models.Asset(tokenId, t.ownerOf(tokenId), t.getIssuer(), address(t), t.name(), t.symbol(), isInAuction, isInSale, price);
         return a;
     }
 

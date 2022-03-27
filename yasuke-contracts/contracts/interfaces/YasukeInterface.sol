@@ -26,15 +26,23 @@ interface YasukeInterface {
 
     function getAuctionInfo(uint256 tokenId, uint256 auctionId) external view returns (Models.AuctionInfo memory);
 
-    function placeBid(uint256 tokenId, uint256 auctionId) external payable;
+    function placeBid(uint256 tokenId, uint256 auctionId) external payable;    
+
+    function buyNow(uint256 tokenId) external payable;
+
+    function sellNow(uint256 tokenId, uint256 price, bool withToken) external;
 
     function withdraw(uint256 tokenId, uint256 auctionId) external;
 
     function cancelAuction(uint256 tokenId, uint256 auctionId) external;
 
-    event LogBid(address, uint256);
+    event LogBid(address indexed, uint256 indexed);
 
-    event LogWithdrawal(address, uint256, uint256);
+    event Sold(address indexed, address indexed, uint256 indexed, uint256);
+    
+    event LogWithdrawal(address indexed, uint256 indexed, uint256 indexed);
 
     event LogCanceled();
+
+    event OnSale(address indexed, uint256 indexed);
 }

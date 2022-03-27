@@ -5,6 +5,7 @@ import { assert } from 'chai'
 describe('YASUKE', function () {
     let yasuke: Contract
     let store: Contract
+    let legalTender: Contract
 
     const blockTime = 3
     let auctionId = 9
@@ -14,13 +15,18 @@ describe('YASUKE', function () {
     let accounts = []
 
     before(async () => {
+        const LegalTender = await ethers.getContractFactory('LegalTender')
+        legalTender = await LegalTender.deploy()
+        await legalTender.deployed()
+        console.log('Legal Tender deployed to:', legalTender.address)
+
         const Storage = await ethers.getContractFactory('Storage')
         store = await Storage.deploy()
         await store.deployed()
         console.log('Store deployed to:', store.address)
 
         const Yasuke = await ethers.getContractFactory('Yasuke')
-        yasuke = await Yasuke.deploy(store.address)
+        yasuke = await Yasuke.deploy(store.address, legalTender.address)
         await yasuke.deployed()
         console.log('YASUKE deployed to:', yasuke.address)
 
@@ -178,7 +184,7 @@ describe('YASUKE', function () {
     })
 
     it('should get completed auction info', async () => {
-        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);    
+        const info = await yasuke.getAuctionInfo(tokenIds[0], auctionId)
         const tid = info[0].toNumber()
         const aid = info[1].toNumber()
         const owner = info[2]
@@ -189,7 +195,7 @@ describe('YASUKE', function () {
         const highestBidder = info[7]
         const highestBid = ethers.utils.formatEther(info[8])
         const cancelled = info[9]
-        const minBid = ethers.utils.formatEther(info[10]);
+        const minBid = ethers.utils.formatEther(info[10])
 
         assert.equal(tid, tokenIds[0])
         assert.equal(owner, accounts[2].address)
@@ -234,14 +240,13 @@ describe('YASUKE', function () {
             assert.equal(info[1], accounts[2].address)
             await y2k.withdraw(tokenIds[0], auctionId)
             info = await yasuke.getTokenInfo(tokenIds[0])
-            assert.equal(info[1], accounts[7].address);
+            assert.equal(info[1], accounts[7].address)
 
-            info = await yasuke.getAuctionInfo(tokenIds[0], auctionId);
-            const started = info[13];
-            const finished = info[14];
-            assert.isFalse(started);
-            assert.isTrue(finished);            
-
+            info = await yasuke.getAuctionInfo(tokenIds[0], auctionId)
+            const started = info[13]
+            const finished = info[14]
+            assert.isFalse(started)
+            assert.isTrue(finished)
         } catch (e) {
             console.log(e)
             assert(false)
@@ -287,7 +292,7 @@ describe('YASUKE', function () {
                 value: ethers.utils.parseEther(toSend + ''),
             }
 
-            y2k = await yasuke.connect(accounts[3]);
+            y2k = await yasuke.connect(accounts[3])
             await y2k.placeBid(tokenId, auctionId, overrides)
 
             const info = await yasuke.getAuctionInfo(tokenId, auctionId)
@@ -296,21 +301,80 @@ describe('YASUKE', function () {
             const b_startBlock = info[3].toNumber()
             const b_endBlock = info[4].toNumber()
             const b_sellNowPrice = ethers.utils.formatEther(info[6])
-            const started = info[13];
-            const finished = info[14];
-            const sellNowTriggered = info[15];
-    
-            assert.equal(tid, tokenId);
-            assert.equal(b_owner, accounts[3].address);
-            assert.equal(b_startBlock, 1);
-            assert.notEqual(b_endBlock, 200);
-            assert.equal(+b_sellNowPrice, +snp);
-            assert.isTrue(sellNowTriggered);
-            assert.isFalse(started);
-            assert.isTrue(finished);
+            const started = info[13]
+            const finished = info[14]
+            const sellNowTriggered = info[15]
+
+            assert.equal(tid, tokenId)
+            assert.equal(b_owner, accounts[3].address)
+            assert.equal(b_startBlock, 1)
+            assert.notEqual(b_endBlock, 200)
+            assert.equal(+b_sellNowPrice, +snp)
+            assert.isTrue(sellNowTriggered)
+            assert.isFalse(started)
+            assert.isTrue(finished)
         } catch (e) {
             console.log(e)
             assert(false)
         }
     })
+
+    it('Should sell now', async () => {
+        try {
+            const owner = accounts[2].address
+            const tokenId = 5
+            const name = `Token Number 5`
+            const symbol = `TOKEN5`
+            await yasuke.issueToken(tokenId, owner, uri, name, symbol)
+            const y2k = await yasuke.connect(accounts[2])
+            await y2k.sellNow(tokenId, 5, true)
+            const info = await yasuke.getTokenInfo(tokenId)
+            assert.isTrue(info.onSale)
+        } catch (err) {
+            console.log(err)
+            assert(false)
+        }
+    })
+
+    it('Should buy after sale with token', async () => {
+        try {
+            // give me some tokens
+            await legalTender.mint(accounts[3].address, 100000);
+            const tokenId = 5;
+            // allow the contract to spend on my behalf
+            const l3K = await legalTender.connect(accounts[3]);
+            await l3K.approve(yasuke.address, 5);
+            // buy 
+            const y2k = await yasuke.connect(accounts[3]);
+            await y2k.buyNow(tokenId);
+            const info = await yasuke.getTokenInfo(tokenId);
+            assert.isFalse(info.onSale);
+        } catch (err) {
+            console.log(err)
+            assert(false)
+        }
+    });
+
+    it('Should sell and buy with BNB', async () => {
+        try {
+            const tokenId = 5;
+            let y2k = await yasuke.connect(accounts[3])
+            await y2k.sellNow(tokenId, 5, false)
+            let info = await yasuke.getTokenInfo(tokenId)
+            assert.isTrue(info.onSale)
+
+            // buy 
+            let toSend = 100.1
+            let overrides = {
+                value: ethers.utils.parseEther('5'),
+            }
+            y2k = await yasuke.connect(accounts[4]);
+            await y2k.buyNow(tokenId, overrides);
+            info = await yasuke.getTokenInfo(tokenId);
+            assert.isFalse(info.onSale);            
+        } catch (err) {
+            console.log(err)
+            assert(false)
+        }
+    });
 })

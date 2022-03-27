@@ -35,6 +35,8 @@ interface StorageInterface {
 
     function isInAuction(uint256 tokenId) external view returns (bool);
 
+    function isInSale(uint256 tokenId) external view returns (bool);
+
     function setStarted(
         uint256 tokenId,
         uint256 auctionId,
@@ -54,6 +56,8 @@ interface StorageInterface {
     ) external;        
 
     function setInAuction(uint256 tokenId, bool started) external;
+
+    function setInSale(uint256 tokenId, bool started) external;
 
     function setHighestBid(
         uint256 tokenId,
@@ -93,6 +97,14 @@ interface StorageInterface {
         uint256 bid
     ) external;
 
+    function startSale(uint256 tokenId, uint256 price, bool withToken) external;    
+
+    function setNoBiddingPrice(uint256 tokenId, uint256 nbp) external;
+
+    function setBuyWithToken(uint256 tokenId, bool bwt) external;
+
+    function getBuyWithToken(uint256 tokenId) external view returns (bool);
+
     function getBids(uint256 tokenId, uint256 auctionId) external view returns (uint256[] memory);
 
     function getBidders(uint256 tokenId, uint256 auctionId) external view returns (address[] memory);
@@ -118,4 +130,6 @@ interface StorageInterface {
     function getParent() external view returns (address);
 
     function getAdmin() external view returns (address);
+
+    function getNoBiddingPrice(uint256 tokenId) external view returns (uint256);
 }

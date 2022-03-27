@@ -65,6 +65,12 @@ export class TokenInfo {
 
   @Column()
   assetType: string;
+
+  @Column()
+  isInAuction: boolean;
+
+  @Column()
+  isInSale: boolean;
 }
 
 @Entity('auctionInfo')

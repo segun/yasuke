@@ -217,6 +217,8 @@ export class YasukeService {
           contractAddress: ti[3],
           symbol: ti[4],
           name: ti[5],
+          isInAuction: ti[6],
+          isInSale: ti[7],
           media: [],
           dateIssued: 0,
           hasActiveAuction: false,

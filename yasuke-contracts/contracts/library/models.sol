@@ -10,6 +10,9 @@ library Models {
         address contractAddress;
         string symbol;
         string name;
+        bool onAuction;
+        bool onSale;
+        uint256 price;
     }
 
     struct AuctionInfo {
