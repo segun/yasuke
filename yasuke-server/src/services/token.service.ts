@@ -196,6 +196,11 @@ export class TokenService {
         dbToken.category = issueToken.category;
         dbToken.description = issueToken.description;
         dbToken.assetType = issueToken.assetType;
+        dbToken.isInAuction = false;
+        dbToken.isInSale = false;
+        dbToken.isApproved = false;
+        dbToken.price = "0";
+
         dbToken = await this.tokenInfoRepository.save(dbToken);
 
         // now let's save the images
