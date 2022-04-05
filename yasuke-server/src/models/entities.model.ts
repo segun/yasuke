@@ -71,6 +71,12 @@ export class TokenInfo {
 
   @Column()
   isInSale: boolean;
+
+  @Column()
+  isApproved: boolean;
+
+  @Column()
+  price: string;
 }
 
 @Entity('auctionInfo')

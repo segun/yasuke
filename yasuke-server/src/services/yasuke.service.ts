@@ -228,6 +228,8 @@ export class YasukeService {
           description: '',
           assetType: '',
           chain: chain,
+          price: '0',
+          isApproved: false,
         };
 
         this.logger.debug(tokenInfo);

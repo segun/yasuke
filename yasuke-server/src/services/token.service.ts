@@ -58,6 +58,8 @@ export class TokenService {
         blockchainToken.description = dbToken.description;
         blockchainToken.assetType = dbToken.assetType;
         blockchainToken.category = dbToken.category;
+        blockchainToken.price = dbToken.price;
+        blockchainToken.isApproved = dbToken.isApproved;
         resolve(blockchainToken);
       } catch (error) {
         reject(error);
@@ -109,6 +111,48 @@ export class TokenService {
       .andWhere("chain = :chain", { chain: chain })
       .orderBy('tokenInfo.dateIssued', 'DESC');
     return paginate<TokenInfo>(qb, options);
+  }
+
+  async setPrice(tokenId: number, price: string, chain: string): Promise<TokenInfo> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const dbToken = await this.tokenInfoRepository
+          .createQueryBuilder('tokenInfo')
+          .where('tokenId = :tid', { tid: tokenId })
+          .andWhere('chain = :chain', { chain: chain })
+          .getOne();
+        if (dbToken === undefined) {
+          reject('Token with tokenId not found');
+        }
+
+        dbToken.price = price;
+        await this.tokenInfoRepository.save(dbToken);
+        resolve(dbToken);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async toggleApproved(tokenId: number, chain: string): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const dbToken = await this.tokenInfoRepository
+          .createQueryBuilder('tokenInfo')
+          .where('tokenId = :tid', { tid: tokenId })
+          .andWhere('chain = :chain', { chain: chain })
+          .getOne();
+        if (dbToken === undefined) {
+          reject('Token with tokenId not found');
+        }
+
+        dbToken.isApproved = !dbToken.isApproved;
+        await this.tokenInfoRepository.save(dbToken);
+        resolve(dbToken.isApproved);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   async toggleSold(tokenId: number, chain: string): Promise<boolean> {

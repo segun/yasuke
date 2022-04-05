@@ -61,6 +61,7 @@ export class AuctionService {
         blockAuction.endDate = sa.endDate;
         dbAuction = await this.auctionInfoRepository.save(blockAuction);
 
+        dbToken.price = blockAuction.minimumBid;
         dbToken.lastAuctionId = sa.auctionId;
         dbToken.hasActiveAuction = true;
 
@@ -90,6 +91,17 @@ export class AuctionService {
   ): Promise<AuctionInfo> {
     return new Promise(async (resolve, reject) => {
       try {
+        const dbToken = await this.tokenInfoRepository
+          .createQueryBuilder('tokenInfo')
+          .where('tokenId = :tid', { tid: tokenId })
+          .andWhere('chain = :chain', { chain: chain })
+          .leftJoinAndSelect('tokenInfo.media', 'media')
+          .getOne();
+
+        if (dbToken === undefined) {
+          reject('Token with token id not found');
+        }
+
         const blockchainAuction = await this.yasukeService.getAuctionInfo(
           tokenId,
           auctionId,
@@ -100,17 +112,6 @@ export class AuctionService {
           blockchainAuction.started === false ||
           blockchainAuction.finished === true
         ) {
-          const dbToken = await this.tokenInfoRepository
-            .createQueryBuilder('tokenInfo')
-            .where('tokenId = :tid', { tid: tokenId })
-            .andWhere('chain = :chain', { chain: chain })
-            .leftJoinAndSelect('tokenInfo.media', 'media')
-            .getOne();
-
-          if (dbToken === undefined) {
-            reject('Token with token id not found');
-          }
-
           dbToken.hasActiveAuction = false;
           this.tokenInfoRepository.save(dbToken);
 
@@ -144,6 +145,14 @@ export class AuctionService {
 
           bids.push(dbBid);
         });
+
+        dbAuction.highestBid = blockchainAuction.highestBid;
+        dbAuction.highestBidder = blockchainAuction.highestBidder;
+
+        this.auctionInfoRepository.save(dbAuction);
+
+        dbToken.price = blockchainAuction.highestBid;
+        this.tokenInfoRepository.save(dbToken);
 
         dbAuction.bids = bids;
 

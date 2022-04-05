@@ -125,6 +125,29 @@ export class YasukeController {
     );
   }
 
+  @Post('bid/:tokenId/:bid')
+  @Roles('api')
+  @ApiSecurity('api-key')
+  async setPrice(@Param('tokenId') tokenId: number, @Param('bid') bid: string, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
+
+    return ResponseUtils.getSuccessResponse(await this.tokenService.setPrice(tokenId, bid, chain))
+  }
+
+  @Post(':tokenId/toggle-approved')
+  @Roles('api')
+  @ApiSecurity('api-key')
+  async setApproved(@Param('tokenId') tokenId: number, @Headers('chain') chain: string): Promise<Response> {
+    if (chain === undefined || chain === '') {
+      chain = 'bsc';
+    }
+    return ResponseUtils.getSuccessResponse(
+      await this.tokenService.toggleApproved(tokenId, chain),
+    );
+  }
+
   @Get('list-tokens')
   async listTokens(
     @Query('page') page: number,
