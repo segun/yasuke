@@ -1,0 +1,11 @@
+Mon 11 Apr 2022 17:48:19 +04
+-----------------------------------
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 6802637582099875194
+Deploying store. 
+Store deployed to: 0xb45c651698c3Ef45b4ac88b89f58e1dAa7c42645
+Deploying Legal Tender. 
+Legal Tender deployed to: 0x44EcEcF8b53E4Fa9c63885247BF4BCC005710270
+YASUKE deployed to: 0x3B783268324b99B941fC797b8e2c9b7F3cf756f3
+Upgrade Successful with 0x3B783268324b99B941fC797b8e2c9b7F3cf756f3,0xE447B45EA6FD4c8B76b25354a503C793826e5294
+✨  Done in 44.72s.

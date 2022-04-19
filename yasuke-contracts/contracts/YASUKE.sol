@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import './Storage.sol';
-import './library/console.sol';
+// import './library/console.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
 import './interfaces/YasukeInterface.sol';
@@ -17,6 +17,8 @@ contract Yasuke is YasukeInterface {
 
     StorageInterface internal store;
     IERC20 internal legalTender;
+
+    address burnAddress = 0x000000000000000000000000000000000000dEaD;
 
     constructor(address storeAddress, address _legalTender) {
         minter = msg.sender;
@@ -83,6 +85,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function endBid(uint256 tokenId, uint256 auctionId) public {
+        require(msg.sender == minter, 'no access');
         shouldBeStarted(tokenId, auctionId);
         store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
     }
@@ -112,7 +115,7 @@ contract Yasuke is YasukeInterface {
         require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
 
         if (shouldBuyWithToken) {
-            bool result = IERC20(legalTender).transfer(address(0), noBiddingPrice);
+            bool result = IERC20(legalTender).transferFrom(msg.sender, burnAddress, noBiddingPrice);
             require(result, 'CANB');
         } else {
             (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice}('');

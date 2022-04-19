@@ -4,7 +4,9 @@ async function main() {
     const deployer = signers[0];
 
     let deployStore = true;
-    let storeAddress = "0x6313BeFE36d7A1F50A02B25c3e4D00EceD2D6A16";
+    let deployLegalTender = true;
+    let storeAddress = "0xA34B45D9145Ab27F88170aA185291Cf6fafa83D8";
+    let legalTenderAddress = "0x385D6203709018591Ddec4552fcff3627d7D21cD";
 
     console.log(
         "Deploying contracts with the account:",
@@ -16,14 +18,23 @@ async function main() {
     if (deployStore) {
         console.log("Deploying store. ");
         const Storage = await ethers.getContractFactory("Storage");
-        store = await Storage.deploy();
+        const store = await Storage.deploy();
         await store.deployed();
         console.log("Store deployed to:", store.address);
         storeAddress = store.address;
     }
 
+    if (deployLegalTender) {
+        console.log("Deploying Legal Tender. ");
+        const LegalTender = await ethers.getContractFactory("LegalTender");
+        const legalTender = await LegalTender.deploy();
+        await legalTender.deployed();
+        console.log("Legal Tender deployed to:", legalTender.address);
+        legalTenderAddress = legalTender.address;        
+    }
+
     const Yasuke = await ethers.getContractFactory("Yasuke");
-    yasuke = await Yasuke.deploy(storeAddress);
+    yasuke = await Yasuke.deploy(storeAddress, legalTenderAddress);
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);
     const a = await yasuke.testUpgrade();
