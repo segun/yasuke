@@ -338,16 +338,17 @@ describe('YASUKE', function () {
 
     it('Should buy after sale with token', async () => {
         try {
-            // give me some tokens
-            await legalTender.mint(accounts[3].address, 100000);
             const tokenId = 5;
+            // give me some tokens
+            await legalTender.mint(accounts[3].address, 100000);            
             // allow the contract to spend on my behalf
-            const l3K = await legalTender.connect(accounts[3]);
-            await l3K.approve(yasuke.address, 5);
+            // const l3K = await legalTender.connect(accounts[3]);
+            // await l3K.approve(yasuke.address, 5);
             // buy 
             const y2k = await yasuke.connect(accounts[3]);
             await y2k.buyNow(tokenId);
             const info = await yasuke.getTokenInfo(tokenId);
+            console.log("Info: 2", info);
             assert.isFalse(info.onSale);
         } catch (err) {
             console.log(err)

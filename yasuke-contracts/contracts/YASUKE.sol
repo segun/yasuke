@@ -98,9 +98,7 @@ contract Yasuke is YasukeInterface {
         bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
 
         if (shouldBuyWithToken) {
-            // does this contract have allowance to spend legaltender
-            uint256 allowance = IERC20(legalTender).allowance(msg.sender, address(this));
-            require(allowance >= noBiddingPrice, 'no allowance');
+            // do nothing
         } else {
             require(msg.value >= noBiddingPrice, 'PTL');
         }
