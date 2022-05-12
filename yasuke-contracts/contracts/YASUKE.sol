@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import './Storage.sol';
-// import './library/console.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
 import './interfaces/YasukeInterface.sol';
@@ -18,7 +17,7 @@ contract Yasuke is YasukeInterface {
     StorageInterface internal store;
     IERC20 internal legalTender;
 
-    address burnAddress = 0x000000000000000000000000000000000000dEaD;
+    address internal burnAddress = 0x000000000000000000000000000000000000dEaD;
 
     constructor(address storeAddress, address _legalTender) {
         minter = msg.sender;
@@ -149,7 +148,7 @@ contract Yasuke is YasukeInterface {
         uint256 newBid = msg.value;
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            store.setEndBlock(tokenId, auctionId, block.number - 1); // forces the auction to end
+            store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
 
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);

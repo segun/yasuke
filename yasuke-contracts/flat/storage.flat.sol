@@ -1,10 +1,6 @@
-// Sources flattened with hardhat v2.6.8 https://hardhat.org
-
-// File contracts/library/models.sol
-
-//SPDX-License-Identifier: MIT
-pragma solidity >= 0.7.0 < 0.9.0;
-pragma experimental ABIEncoderV2;
+//SPDX-License-Identifier: MIT-0
+// pragma solidity  >= 0.7.0 < 0.9.0;
+pragma solidity 0.8.4;
 
 library Models {
     struct Asset {
@@ -42,10 +38,10 @@ library Models {
 
 // File @openzeppelin/contracts/utils/introspection/IERC165.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -71,10 +67,10 @@ interface IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/IERC721.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -216,10 +212,10 @@ interface IERC721 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721Receiver.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/IERC721Receiver.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @title ERC721 token receiver interface
@@ -247,10 +243,10 @@ interface IERC721Receiver {
 
 // File @openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/extensions/IERC721Metadata.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
@@ -276,10 +272,10 @@ interface IERC721Metadata is IERC721 {
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/Address.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev Collection of functions related to the address type
@@ -497,10 +493,10 @@ library Address {
 
 // File @openzeppelin/contracts/utils/Context.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev Provides information about the current execution context, including the
@@ -525,10 +521,10 @@ abstract contract Context {
 
 // File @openzeppelin/contracts/utils/Strings.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/Strings.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev String operations.
@@ -596,10 +592,10 @@ library Strings {
 
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/ERC165.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -627,10 +623,10 @@ abstract contract ERC165 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/ERC721.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/ERC721.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 
 
@@ -1053,10 +1049,10 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
 
 // File @openzeppelin/contracts/utils/math/SafeMath.sol@v4.4.2
 
-// 
+
 // OpenZeppelin Contracts v4.4.1 (utils/math/SafeMath.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity  ^0.8.0;
 
 // CAUTION
 // This version of SafeMath should only be used with Solidity 0.8 or later,
@@ -1284,8 +1280,8 @@ library SafeMath {
 
 // File contracts/library/console.sol
 
-// 
-pragma solidity >= 0.4.22 <0.9.0;
+
+// pragma solidity  >= 0.4.22 <0.9.0;
 
 library console {
 	address constant CONSOLE_ADDRESS = address(0x000000000000000000636F6e736F6c652e6c6f67);
@@ -2820,7 +2816,8 @@ library console {
 
 // File contracts/Token.sol
 
-pragma solidity >= 0.7.0 < 0.9.0;
+
+// pragma solidity  >= 0.7.0 < 0.9.0;
 
 
 
@@ -2872,8 +2869,8 @@ contract Token is ERC721 {
 // File contracts/interfaces/StorageInterface.sol
 
 
-pragma solidity >=0.7.0 <0.9.0;
-
+// pragma solidity  >=0.7.0 <0.9.0;
+pragma experimental ABIEncoderV2;
 
 
 interface StorageInterface {
@@ -3010,8 +3007,7 @@ interface StorageInterface {
 // File contracts/Storage.sol
 
 
-pragma solidity >=0.7.0 <0.9.0;
-
+// pragma solidity  >=0.7.0 <0.9.0;
 
 
 

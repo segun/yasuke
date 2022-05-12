@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (utils/math/SafeMath.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 
 // CAUTION
 // This version of SafeMath should only be used with Solidity 0.8 or later,
@@ -233,9 +233,9 @@ library SafeMath {
 
 // File contracts/library/models.sol
 
+//-0
+// pragma solidity >= 0.7.0 < 0.9.0;
 
-pragma solidity >= 0.7.0 < 0.9.0;
-pragma experimental ABIEncoderV2;
 
 library Models {
     struct Asset {
@@ -273,10 +273,10 @@ library Models {
 
 // File @openzeppelin/contracts/utils/introspection/IERC165.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -302,10 +302,10 @@ interface IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/IERC721.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -447,10 +447,10 @@ interface IERC721 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721Receiver.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/IERC721Receiver.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @title ERC721 token receiver interface
@@ -478,10 +478,10 @@ interface IERC721Receiver {
 
 // File @openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/extensions/IERC721Metadata.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
@@ -507,10 +507,10 @@ interface IERC721Metadata is IERC721 {
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (utils/Address.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Collection of functions related to the address type
@@ -728,10 +728,10 @@ library Address {
 
 // File @openzeppelin/contracts/utils/Context.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Provides information about the current execution context, including the
@@ -756,10 +756,10 @@ abstract contract Context {
 
 // File @openzeppelin/contracts/utils/Strings.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (utils/Strings.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev String operations.
@@ -827,10 +827,10 @@ library Strings {
 
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/ERC165.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -858,10 +858,10 @@ abstract contract ERC165 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/ERC721.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (token/ERC721/ERC721.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 
 
@@ -1284,8 +1284,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
 
 // File contracts/library/console.sol
 
-
-pragma solidity >= 0.4.22 <0.9.0;
+// 
+// pragma solidity >= 0.4.22 <0.9.0;
 
 library console {
 	address constant CONSOLE_ADDRESS = address(0x000000000000000000636F6e736F6c652e6c6f67);
@@ -2820,8 +2820,8 @@ library console {
 
 // File contracts/Token.sol
 
-
-pragma solidity >= 0.7.0 < 0.9.0;
+//-0
+// pragma solidity >= 0.7.0 < 0.9.0;
 
 
 
@@ -2872,9 +2872,9 @@ contract Token is ERC721 {
 
 // File contracts/interfaces/StorageInterface.sol
 
-
-pragma solidity >=0.7.0 <0.9.0;
-
+//-0
+// pragma solidity >=0.7.0 <0.9.0;
+pragma experimental ABIEncoderV2;
 
 
 interface StorageInterface {
@@ -3010,9 +3010,8 @@ interface StorageInterface {
 
 // File contracts/Storage.sol
 
-
-pragma solidity >=0.7.0 <0.9.0;
-
+//-0
+// pragma solidity >=0.7.0 <0.9.0;
 
 
 
@@ -3344,8 +3343,8 @@ contract Storage is StorageInterface {
 
 // File contracts/interfaces/YasukeInterface.sol
 
-
-pragma solidity >=0.7.0 <0.9.0;
+//-0
+// pragma solidity >=0.7.0 <0.9.0;
 
 
 interface YasukeInterface {
@@ -3395,10 +3394,10 @@ interface YasukeInterface {
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.4.2
 
-
+// 
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/IERC20.sol)
 
-pragma solidity ^0.8.0;
+// pragma solidity ^0.8.0;
 
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
@@ -3481,12 +3480,11 @@ interface IERC20 {
 
 // File contracts/YASUKE.sol
 
+//-0
+// pragma solidity >=0.7.0 <0.9.0;
 
-pragma solidity >=0.7.0 <0.9.0;
 
 
-
-// import './library/console.sol';
 
 
 
@@ -3499,7 +3497,7 @@ contract Yasuke is YasukeInterface {
     StorageInterface internal store;
     IERC20 internal legalTender;
 
-    address burnAddress = 0x000000000000000000000000000000000000dEaD;
+    address private burnAddress = 0x000000000000000000000000000000000000dEaD;
 
     constructor(address storeAddress, address _legalTender) {
         minter = msg.sender;
@@ -3566,6 +3564,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function endBid(uint256 tokenId, uint256 auctionId) public {
+        require(msg.sender == minter, 'no access');
         shouldBeStarted(tokenId, auctionId);
         store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
     }
@@ -3578,9 +3577,7 @@ contract Yasuke is YasukeInterface {
         bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
 
         if (shouldBuyWithToken) {
-            // does this contract have allowance to spend legaltender
-            uint256 allowance = IERC20(legalTender).allowance(msg.sender, address(this));
-            require(allowance >= noBiddingPrice, 'no allowance');
+            // do nothing
         } else {
             require(msg.value >= noBiddingPrice, 'PTL');
         }
@@ -3631,7 +3628,7 @@ contract Yasuke is YasukeInterface {
         uint256 newBid = msg.value;
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            store.setEndBlock(tokenId, auctionId, block.number - 1); // forces the auction to end
+            store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
 
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);

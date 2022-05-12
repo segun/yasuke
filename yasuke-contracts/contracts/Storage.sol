@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import './interfaces/StorageInterface.sol';
 import './library/models.sol';
-import './library/console.sol';
 import './Token.sol';
 
 contract Storage is StorageInterface {
