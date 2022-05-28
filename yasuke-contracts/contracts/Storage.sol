@@ -37,6 +37,10 @@ contract Storage is StorageInterface {
 
     function setXendFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
+        // should not increment more than 5% at a time
+        // should not be more than 30%
+        require(_percentage - xendFeesPercentage <= 5);
+        require(_percentage < 30);
         xendFeesPercentage = _percentage;
     }
 
@@ -46,6 +50,8 @@ contract Storage is StorageInterface {
 
     function setIssuerFeesPercentage(uint256 _percentage) public override {
         require(msg.sender == admin, "You can't do that");
+        // should not be more than 30%   
+        require(_percentage <= 30);             
         issuerFeesPercentage = _percentage;
     }
 
