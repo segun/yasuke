@@ -116,7 +116,8 @@ contract Yasuke is YasukeInterface {
             bool result = IERC20(legalTender).transferFrom(msg.sender, burnAddress, noBiddingPrice);
             require(result, 'CANB');
         } else {
-            (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice}('');
+            require(tx.origin == msg.sender, 'EOA');
+            (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice, gas: 2300}('');
             require(sent, 'BFMB');
         }
 
@@ -139,6 +140,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
+        require(tx.origin == msg.sender, 'EOA');            
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
         require(msg.value > 0, 'CNB0');
@@ -154,7 +156,7 @@ contract Yasuke is YasukeInterface {
             // refund bidder the difference if any
             uint256 difference = newBid.sub(sellNowPrice);
             if (difference > 0) {
-                (bool sent, ) = payable(msg.sender).call{value: difference}('');
+                (bool sent, ) = payable(msg.sender).call{value: difference, gas: 2300}('');
                 require(sent, 'BFMB');
             }
 
@@ -172,7 +174,7 @@ contract Yasuke is YasukeInterface {
         // refund highest bidder their bid
         if (highestBidder != address(0)) {
             // this is the not first bid
-            (bool sent, ) = payable(highestBidder).call{value: highestBid}('');
+            (bool sent, ) = payable(highestBidder).call{value: highestBid, gas: 2300}('');
             require(sent, 'HBRF');
         }
 
@@ -188,10 +190,8 @@ contract Yasuke is YasukeInterface {
         }
     }
 
-    function _withdrawal(
-        uint256 tokenId,
-        uint256 auctionId
-    ) internal {
+    function _withdrawal(uint256 tokenId, uint256 auctionId) internal {
+        require(tx.origin == msg.sender, 'EOA');            
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
         require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
@@ -210,13 +210,13 @@ contract Yasuke is YasukeInterface {
         // if failed...refund highest bidder, end auction
         if (changeOwnershipSuccess == false) {
             // end auction
-            // refund highest bidder            
+            // refund highest bidder
             store.setInAuction(tokenId, false); // we can create new auction
             store.setFinished(tokenId, auctionId, true);
             store.setStarted(tokenId, auctionId, false);
             store.setHighestBidder(tokenId, auctionId, address(0));
-            store.setHighestBid(tokenId, auctionId, 0);                        
-            (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount}('');
+            store.setHighestBid(tokenId, auctionId, 0);
+            (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount, gas: 2300}('');
             require(sent, 'CNCOCNRHB');
         } else {
             // withdraw funds from highest bidder
@@ -233,6 +233,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
+        require(tx.origin == msg.sender, 'EOA');            
         Token t = store.getToken(tokenId);
         address payable owner = payable(t.ownerOf(tokenId));
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
@@ -260,16 +261,16 @@ contract Yasuke is YasukeInterface {
 
         bool sent = false;
         if (issuerFees > 0) {
-            (sent, ) = payable(t.getIssuer()).call{value: issuerFees}('');
+            (sent, ) = payable(t.getIssuer()).call{value: issuerFees, gas: 2300}('');
             require(sent, 'CNSTI');
         }
 
-        if (xendFees > 0) {
-            (sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees}('');
+        if (xendFees > 0) {            
+            (sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees, gas: 2300}('');
             require(sent, 'CNSTXND');
         }
 
-        (sent, ) = payable(owner).call{value: withdrawalAmount}('');
+        (sent, ) = payable(owner).call{value: withdrawalAmount, gas: 2300}('');
         require(sent, 'WF');
     }
 
