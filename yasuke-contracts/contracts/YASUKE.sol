@@ -27,6 +27,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function upgrade(address storeAddress) public {
+        require(msg.sender == minter, 'access denied');
         store = StorageInterface(storeAddress);
         store.setAdmin(address(this), msg.sender);
     }
@@ -278,6 +279,7 @@ contract Yasuke is YasukeInterface {
 
     // TODO: Check if there are no bids before cancelling.
     function cancelAuction(uint256 tokenId, uint256 auctionId) public override {
+        require(msg.sender == minter, 'access denied');
         shouldBeStarted(tokenId, auctionId);
         require(store.getBids(tokenId, auctionId).length > 0);
         store.setCancelled(tokenId, auctionId, true);
