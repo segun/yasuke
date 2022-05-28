@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import './interfaces/StorageInterface.sol';
 import './library/models.sol';
-import './Token.sol';
 
 contract Storage is StorageInterface {
     mapping(uint256 => address) internal owner;
@@ -329,11 +328,5 @@ contract Storage is StorageInterface {
 
     function isInSale(uint256 tokenId) public view override returns (bool) {
         return inSale[tokenId];
-    }    
-
-    function echo() public view override returns (bool) {
-        console.log('2. Sender: %s, Admin: %s, Parent: %s', msg.sender, admin, parent);
-        require(msg.sender == admin, "You can't do that");
-        return true;
     }
 }

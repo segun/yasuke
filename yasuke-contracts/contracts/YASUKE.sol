@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './Storage.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
@@ -10,7 +11,7 @@ import './interfaces/YasukeInterface.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // TODO: Calculate Fees
-contract Yasuke is YasukeInterface {
+contract Yasuke is YasukeInterface, ReentrancyGuard {
     using SafeMath for uint256;
     address internal minter;
 
@@ -33,7 +34,6 @@ contract Yasuke is YasukeInterface {
     }
 
     function testUpgrade() public view returns (address, address) {
-        require(store.echo(), 'UF');
         return (store.getAdmin(), store.getParent());
     }
 
@@ -45,7 +45,7 @@ contract Yasuke is YasukeInterface {
         uint256 currentBlock,
         uint256 sellNowPrice,
         uint256 minimumBid
-    ) public override {
+    ) public override nonReentrant {
         Token t = store.getToken(tokenId);
         require(t.ownerOf(tokenId) == msg.sender, 'WO');
         require(!store.isInAuction(tokenId), 'AIP');
@@ -77,20 +77,20 @@ contract Yasuke is YasukeInterface {
         string memory _uri,
         string memory _name,
         string memory _symbol
-    ) public override {
+    ) public override nonReentrant {
         Token t = new Token(owner, _uri, _name, _symbol);
         require(t.mint(tokenId), 'MF');
         store.addToken(tokenId, t);
         store.setOwner(tokenId, owner);
     }
 
-    function endBid(uint256 tokenId, uint256 auctionId) public {
+    function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
         require(msg.sender == minter, 'no access');
         shouldBeStarted(tokenId, auctionId);
         store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
     }
 
-    function buyNow(uint256 tokenId) public payable override {
+    function buyNow(uint256 tokenId) public payable override nonReentrant {
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
         require(msg.sender != t.ownerOf(tokenId), 'OCB');
@@ -123,10 +123,7 @@ contract Yasuke is YasukeInterface {
         emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
     }
 
-    function sellNow(
-        uint256 tokenId,
-        uint256 price
-    ) public override {
+    function sellNow(uint256 tokenId, uint256 price) public override nonReentrant {
         require(!store.isInAuction(tokenId), 'ANE');
         require(!store.isInSale(tokenId), 'ANIS');
         Token t = store.getToken(tokenId);
@@ -137,7 +134,7 @@ contract Yasuke is YasukeInterface {
         emit OnSale(msg.sender, tokenId);
     }
 
-    function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
+    function placeBid(uint256 tokenId, uint256 auctionId) public payable override nonReentrant {
         require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
@@ -201,13 +198,6 @@ contract Yasuke is YasukeInterface {
         if (cancelled) {
             // owner can not withdraw anything
             require(msg.sender != owner, 'AWC');
-        }
-
-        // try change ownership
-        bool changeOwnershipSuccess = t.changeOwnership(tokenId, owner, highestBidder);
-        // if failed...refund highest bidder, end auction
-        if (changeOwnershipSuccess == false) {
-            // end auction
             // refund highest bidder
             store.setInAuction(tokenId, false); // we can create new auction
             store.setFinished(tokenId, auctionId, true);
@@ -217,16 +207,31 @@ contract Yasuke is YasukeInterface {
             (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount, gas: 2300}('');
             require(sent, 'CNCOCNRHB');
         } else {
-            // withdraw funds from highest bidder
-            _withdrawOwner(tokenId, auctionId);
-            store.setInAuction(tokenId, false); // we can create new auction
-            store.setOwner(tokenId, highestBidder);
-            store.setFinished(tokenId, auctionId, true);
-            store.setStarted(tokenId, auctionId, false);
-            store.setHighestBidder(tokenId, auctionId, address(0));
-            store.setHighestBid(tokenId, auctionId, 0);
+            // try change ownership
+            bool changeOwnershipSuccess = t.changeOwnership(tokenId, owner, highestBidder);
+            // if failed...refund highest bidder, end auction
+            if (changeOwnershipSuccess == false) {
+                // end auction
+                // refund highest bidder
+                store.setInAuction(tokenId, false); // we can create new auction
+                store.setFinished(tokenId, auctionId, true);
+                store.setStarted(tokenId, auctionId, false);
+                store.setHighestBidder(tokenId, auctionId, address(0));
+                store.setHighestBid(tokenId, auctionId, 0);
+                (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount, gas: 2300}('');
+                require(sent, 'CNCOCNRHB');
+            } else {
+                // withdraw funds from highest bidder
+                _withdrawOwner(tokenId, auctionId);
+                store.setInAuction(tokenId, false); // we can create new auction
+                store.setOwner(tokenId, highestBidder);
+                store.setFinished(tokenId, auctionId, true);
+                store.setStarted(tokenId, auctionId, false);
+                store.setHighestBidder(tokenId, auctionId, address(0));
+                store.setHighestBid(tokenId, auctionId, 0);
 
-            emit LogWithdrawal(msg.sender, tokenId, auctionId);
+                emit LogWithdrawal(msg.sender, tokenId, auctionId);
+            }
         }
     }
 
@@ -272,12 +277,12 @@ contract Yasuke is YasukeInterface {
         require(sent, 'WF');
     }
 
-    function withdraw(uint256 tokenId, uint256 auctionId) public override {
+    function withdraw(uint256 tokenId, uint256 auctionId) public override nonReentrant {
         _withdrawal(tokenId, auctionId);
     }
 
     // TODO: Check if there are no bids before cancelling.
-    function cancelAuction(uint256 tokenId, uint256 auctionId) public override {
+    function cancelAuction(uint256 tokenId, uint256 auctionId) public override nonReentrant {
         require(msg.sender == minter, 'access denied');
         shouldBeStarted(tokenId, auctionId);
         require(store.getBids(tokenId, auctionId).length > 0);

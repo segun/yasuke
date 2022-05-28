@@ -125,8 +125,6 @@ interface StorageInterface {
 
     function getXendFeesAddress() external view returns (address payable);    
 
-    function echo() external view returns (bool);
-
     function getParent() external view returns (address);
 
     function getAdmin() external view returns (address);
