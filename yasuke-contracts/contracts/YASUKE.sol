@@ -183,14 +183,13 @@ contract Yasuke is YasukeInterface {
         emit LogBid(msg.sender, newBid);
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            _withdrawal(tokenId, auctionId, false);
+            _withdrawal(tokenId, auctionId);
         }
     }
 
     function _withdrawal(
         uint256 tokenId,
-        uint256 auctionId,
-        bool withdrawOwner
+        uint256 auctionId
     ) internal {
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
@@ -198,32 +197,38 @@ contract Yasuke is YasukeInterface {
         bool cancelled = store.isCancelled(tokenId, auctionId);
         address owner = t.ownerOf(tokenId);
         address highestBidder = store.getHighestBidder(tokenId, auctionId);
+        uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
 
         if (cancelled) {
             // owner can not withdraw anything
             require(msg.sender != owner, 'AWC');
         }
 
-        if (msg.sender == owner) {
+        // try change ownership
+        bool changeOwnershipSuccess = t.changeOwnership(tokenId, owner, highestBidder);
+        // if failed...refund highest bidder, end auction
+        if (changeOwnershipSuccess == false) {
+            // end auction
+            // refund highest bidder            
+            store.setInAuction(tokenId, false); // we can create new auction
+            store.setFinished(tokenId, auctionId, true);
+            store.setStarted(tokenId, auctionId, false);
+            store.setHighestBidder(tokenId, auctionId, address(0));
+            store.setHighestBid(tokenId, auctionId, 0);                        
+            (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount}('');
+            require(sent, 'CNCOCNRHB');
+        } else {
             // withdraw funds from highest bidder
             _withdrawOwner(tokenId, auctionId);
-        } else if (msg.sender == highestBidder) {
-            // transfer the token from owner to highest bidder
-            require(t.changeOwnership(tokenId, owner, highestBidder), 'CNCO');
-
-            // withdraw owner
-            if (withdrawOwner) {
-                _withdrawOwner(tokenId, auctionId);
-            }
             store.setInAuction(tokenId, false); // we can create new auction
             store.setOwner(tokenId, highestBidder);
             store.setFinished(tokenId, auctionId, true);
             store.setStarted(tokenId, auctionId, false);
             store.setHighestBidder(tokenId, auctionId, address(0));
             store.setHighestBid(tokenId, auctionId, 0);
-        }
 
-        emit LogWithdrawal(msg.sender, tokenId, auctionId);
+            emit LogWithdrawal(msg.sender, tokenId, auctionId);
+        }
     }
 
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
@@ -268,7 +273,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function withdraw(uint256 tokenId, uint256 auctionId) public override {
-        _withdrawal(tokenId, auctionId, true);
+        _withdrawal(tokenId, auctionId);
     }
 
     // TODO: Check if there are no bids before cancelling.
