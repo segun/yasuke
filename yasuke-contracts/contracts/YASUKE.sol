@@ -98,7 +98,9 @@ contract Yasuke is YasukeInterface {
         bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
 
         if (shouldBuyWithToken) {
-            // do nothing
+            // you can't buy with token,
+            // revert...buy now call should be made from placeBid
+            revert('CBNWT');
         } else {
             require(msg.value >= noBiddingPrice, 'PTL');
         }
@@ -107,18 +109,15 @@ contract Yasuke is YasukeInterface {
         address owner = t.ownerOf(tokenId);
         address buyer = msg.sender;
 
-        store.setInSale(tokenId, false);
-        store.setNoBiddingPrice(tokenId, 0);
-        // transfer the token from seller to buyer
-        require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
-
         if (shouldBuyWithToken) {
+            store.setInSale(tokenId, false);
+            store.setNoBiddingPrice(tokenId, 0);
+            // transfer the token from seller to buyer
+            require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
+
+            // another app handles the logic of paying the seller.
             bool result = IERC20(legalTender).transferFrom(msg.sender, burnAddress, noBiddingPrice);
             require(result, 'CANB');
-        } else {
-            require(tx.origin == msg.sender, 'EOA');
-            (bool sent, ) = payable(msg.sender).call{value: noBiddingPrice, gas: 2300}('');
-            require(sent, 'BFMB');
         }
 
         emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
@@ -126,21 +125,20 @@ contract Yasuke is YasukeInterface {
 
     function sellNow(
         uint256 tokenId,
-        uint256 price,
-        bool withToken
+        uint256 price
     ) public override {
         require(!store.isInAuction(tokenId), 'ANE');
         require(!store.isInSale(tokenId), 'ANIS');
         Token t = store.getToken(tokenId);
         require(address(t) != address(0), 'TINF');
         require(msg.sender == t.ownerOf(tokenId), 'OCB');
-        store.startSale(tokenId, price, withToken);
+        store.startSale(tokenId, price, true);
 
         emit OnSale(msg.sender, tokenId);
     }
 
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override {
-        require(tx.origin == msg.sender, 'EOA');            
+        require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         shouldBeStarted(tokenId, auctionId);
         require(msg.value > 0, 'CNB0');
@@ -191,7 +189,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function _withdrawal(uint256 tokenId, uint256 auctionId) internal {
-        require(tx.origin == msg.sender, 'EOA');            
+        require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
         require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
@@ -233,7 +231,7 @@ contract Yasuke is YasukeInterface {
     }
 
     function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
-        require(tx.origin == msg.sender, 'EOA');            
+        require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         address payable owner = payable(t.ownerOf(tokenId));
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
@@ -265,7 +263,7 @@ contract Yasuke is YasukeInterface {
             require(sent, 'CNSTI');
         }
 
-        if (xendFees > 0) {            
+        if (xendFees > 0) {
             (sent, ) = payable(store.getXendFeesAddress()).call{value: xendFees, gas: 2300}('');
             require(sent, 'CNSTXND');
         }

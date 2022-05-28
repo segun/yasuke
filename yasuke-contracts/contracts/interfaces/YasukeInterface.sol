@@ -30,7 +30,7 @@ interface YasukeInterface {
 
     function buyNow(uint256 tokenId) external payable;
 
-    function sellNow(uint256 tokenId, uint256 price, bool withToken) external;
+    function sellNow(uint256 tokenId, uint256 price) external;
 
     function withdraw(uint256 tokenId, uint256 auctionId) external;
 
