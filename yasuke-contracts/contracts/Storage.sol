@@ -77,6 +77,7 @@ contract Storage is StorageInterface {
     }
 
     function setAdmin(address _admin, address _parent) public override {
+        require(msg.sender == admin, "You can't do that");
         if (admin == address(0) && parent == address(0)) {
             parent = _parent;
             admin = _admin;
