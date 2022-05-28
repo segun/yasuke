@@ -90,6 +90,7 @@ contract Storage is StorageInterface {
 
     function addToken(uint256 tokenId, Token token) public override {
         require(msg.sender == admin, "You can't do that");
+        require(address(tokens[tokenId]) == address(0), "Token with ID already exists");
         tokens[tokenId] = token;
     }
 
