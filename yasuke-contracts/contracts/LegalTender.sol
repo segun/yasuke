@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/security/Pausable.sol';
 import '@openzeppelin/contracts/access/AccessControl.sol';
 
 /// @custom:security-contact akintayo.segun@gmail.com
-contract LegalTender is ERC20, ERC20Burnable, Pausable, AccessControl {
+contract LegalTender is ERC20Burnable, Pausable, AccessControl {
     bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
     bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
 
