@@ -36,6 +36,12 @@ interface YasukeInterface {
 
     function cancelAuction(uint256 tokenId, uint256 auctionId) external;
 
+    function setIssuerFeesPercentage(uint256 percentage) external;
+
+    function setXendFeesAddress(address payable xfAddress) external;
+
+    function setBuyWithToken(uint256 tokenId, bool bwt) external;
+
     event LogBid(address indexed, uint256 indexed);
 
     event Sold(address indexed, address indexed, uint256 indexed, uint256);

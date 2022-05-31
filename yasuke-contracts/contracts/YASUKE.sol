@@ -322,4 +322,19 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         require(store.isStarted(tokenId, auctionId), 'ANS');
         require(store.isInAuction(tokenId), 'ANIP');
     }
+
+    function setIssuerFeesPercentage(uint256 perc) public override {
+        require(msg.sender == minter, 'access denied');
+        store.setIssuerFeesPercentage(perc);
+    }
+
+    function setXendFeesAddress(address payable add) public override {
+        require(msg.sender == minter, 'access denied');
+        store.setXendFeesAddress(add);
+    }
+
+    function setBuyWithToken(uint256 tokenId, bool bwt) public override {
+        require(msg.sender == minter, 'access denied');
+        store.setBuyWithToken(tokenId, bwt);
+    }
 }
