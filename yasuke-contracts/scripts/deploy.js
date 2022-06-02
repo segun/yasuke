@@ -34,7 +34,8 @@ async function main() {
     }
 
     const Yasuke = await ethers.getContractFactory("Yasuke");
-    yasuke = await Yasuke.deploy(storeAddress, legalTenderAddress);
+    //yasuke = await Yasuke.deploy(storeAddress, legalTenderAddress);
+    yasuke = await Yasuke.deploy(storeAddress);
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);
     const a = await yasuke.testUpgrade();

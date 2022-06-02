@@ -1,3 +1,55 @@
+Tue 01 June 2022 17:48:19 +04
+-----------------------------------
+
+➜  yasuke-contracts git:(master) ✗ yarn deploy-yasuke --network avalanche
+yarn run v1.22.18
+warning package.json: No license field
+$ npx hardhat run scripts/deploy.yasuke.js --network avalanche
+Compiling 26 files with 0.8.4
+Compilation finished successfully
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 4234418700000000000
+YASUKE deployed to: 0x787Ce8EF2Ff89CfBbf194Ba44d3c5758289F8D0B
+
+Tue 01 June 2022 17:48:19 +04
+-----------------------------------
+$ npx hardhat run scripts/deploy.js --network avalanche
+Compiling 26 files with 0.8.4
+Compilation finished successfully
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 4433438925000000000
+Deploying store. 
+Store deployed to: 0x17D49b37d9391BD3734f75b57F38778fC8a3BbCd
+Deploying Legal Tender. 
+Legal Tender deployed to: 0x1F0d2144b40C4dEd25Be394173f1751f30e585cd
+YASUKE deployed to: 0x1D22f81c9a3c8a27d9F563a78eba0de106FDEBF2
+Upgrade Successful with 0x1D22f81c9a3c8a27d9F563a78eba0de106FDEBF2,0xE447B45EA6FD4c8B76b25354a503C793826e5294
+
+
+Tue 31 May 2022 17:48:19 +04
+-----------------------------------
+yasuke-contracts git:(master) ✗ yarn deploy --network avalanche
+yarn run v1.22.18
+warning package.json: No license field
+$ npx hardhat run scripts/deploy.js --network avalanche
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 4631227925000000000
+Deploying store. 
+Store deployed to: 0x235bf99235C83004fA9e9229d5e2220a9Ad5B1A4
+Deploying Legal Tender. 
+Legal Tender deployed to: 0x9f60701ED05F5FE7d93560Cf99f51373Eb156356
+YASUKE deployed to: 0x4C1f4ec7FBFcAF5789Da969933621311AC0fFFFD
+Upgrade Successful with 0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000000
+
+Tue 31 May 2022 17:48:19 +04
+-----------------------------------
+Compiling 26 files with 0.8.4
+Compilation finished successfully
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 6540997622099875194
+YASUKE deployed to: 0xA592441F1F571b1a164603f6f9E93A5F7703186a
+Upgrade Successful with 0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000000
+
 Mon 11 Apr 2022 17:48:19 +04
 -----------------------------------
 Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294

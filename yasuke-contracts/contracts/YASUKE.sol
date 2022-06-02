@@ -4,11 +4,9 @@ pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import './Storage.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
 import './interfaces/YasukeInterface.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // TODO: Calculate Fees
 contract Yasuke is YasukeInterface, ReentrancyGuard {
@@ -16,15 +14,13 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
     address internal minter;
 
     StorageInterface internal store;
-    IERC20 internal legalTender;
 
     address internal burnAddress = 0x000000000000000000000000000000000000dEaD;
 
-    constructor(address storeAddress, address _legalTender) {
+    constructor(address storeAddress) {
         minter = msg.sender;
         store = StorageInterface(storeAddress);
         store.setAdmin(address(this), msg.sender);
-        legalTender = IERC20(_legalTender);
     }
 
     function upgrade(address storeAddress) public {
@@ -84,55 +80,55 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         store.setOwner(tokenId, owner);
     }
 
-    function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
-        require(msg.sender == minter, 'no access');
-        shouldBeStarted(tokenId, auctionId);
-        store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
-    }
+    // function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
+    //     require(msg.sender == minter, 'no access');
+    //     shouldBeStarted(tokenId, auctionId);
+    //     store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
+    // }
 
-    function buyNow(uint256 tokenId) public payable override nonReentrant {
-        Token t = store.getToken(tokenId);
-        require(address(t) != address(0), 'TINF');
-        require(msg.sender != t.ownerOf(tokenId), 'OCB');
-        uint256 noBiddingPrice = store.getNoBiddingPrice(tokenId);
-        bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
+    // function buyNow(uint256 tokenId) public payable override nonReentrant {
+    //     Token t = store.getToken(tokenId);
+    //     require(address(t) != address(0), 'TINF');
+    //     require(msg.sender != t.ownerOf(tokenId), 'OCB');
+    //     uint256 noBiddingPrice = store.getNoBiddingPrice(tokenId);
+    //     bool shouldBuyWithToken = store.getBuyWithToken(tokenId);
 
-        if (shouldBuyWithToken) {
-            // you can't buy with token,
-            // revert...buy now call should be made from placeBid
-            revert('CBNWT');
-        } else {
-            require(msg.value >= noBiddingPrice, 'PTL');
-        }
+    //     if (shouldBuyWithToken) {
+    //         // you can't buy with token,
+    //         // revert...buy now call should be made from placeBid
+    //         revert('CBNWT');
+    //     } else {
+    //         require(msg.value >= noBiddingPrice, 'PTL');
+    //     }
 
-        require(store.isInSale(tokenId), 'BANS');
-        address owner = t.ownerOf(tokenId);
-        address buyer = msg.sender;
+    //     require(store.isInSale(tokenId), 'BANS');
+    //     address owner = t.ownerOf(tokenId);
+    //     address buyer = msg.sender;
 
-        if (shouldBuyWithToken) {
-            store.setInSale(tokenId, false);
-            store.setNoBiddingPrice(tokenId, 0);
-            // transfer the token from seller to buyer
-            require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
+    //     if (shouldBuyWithToken) {
+    //         store.setInSale(tokenId, false);
+    //         store.setNoBiddingPrice(tokenId, 0);
+    //         // transfer the token from seller to buyer
+    //         require(t.changeOwnership(tokenId, owner, buyer), 'CNCO');
 
-            // another app handles the logic of paying the seller.
-            bool result = IERC20(legalTender).transferFrom(msg.sender, burnAddress, noBiddingPrice);
-            require(result, 'CANB');
-        }
+    //         // another app handles the logic of paying the seller.
+    //         bool result = IERC20(legalTender).transferFrom(msg.sender, burnAddress, noBiddingPrice);
+    //         require(result, 'CANB');
+    //     }
 
-        emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
-    }
+    //     emit Sold(owner, msg.sender, tokenId, noBiddingPrice);
+    // }
 
-    function sellNow(uint256 tokenId, uint256 price) public override nonReentrant {
-        require(!store.isInAuction(tokenId), 'ANE');
-        require(!store.isInSale(tokenId), 'ANIS');
-        Token t = store.getToken(tokenId);
-        require(address(t) != address(0), 'TINF');
-        require(msg.sender == t.ownerOf(tokenId), 'OCB');
-        store.startSale(tokenId, price, true);
+    // function sellNow(uint256 tokenId, uint256 price) public override nonReentrant {
+    //     require(!store.isInAuction(tokenId), 'ANE');
+    //     require(!store.isInSale(tokenId), 'ANIS');
+    //     Token t = store.getToken(tokenId);
+    //     require(address(t) != address(0), 'TINF');
+    //     require(msg.sender == t.ownerOf(tokenId), 'OCB');
+    //     store.startSale(tokenId, price, true);
 
-        emit OnSale(msg.sender, tokenId);
-    }
+    //     emit OnSale(msg.sender, tokenId);
+    // }
 
     function placeBid(uint256 tokenId, uint256 auctionId) public payable override nonReentrant {
         require(tx.origin == msg.sender, 'EOA');
@@ -181,6 +177,7 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         emit LogBid(msg.sender, newBid);
 
         if (newBid >= sellNowPrice && sellNowPrice != 0) {
+            store.setInAuction(tokenId, false);
             _withdrawal(tokenId, auctionId);
         }
     }
@@ -189,7 +186,7 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
-        require(block.number > store.getEndBlock(tokenId, auctionId) || store.isCancelled(tokenId, auctionId), 'ANE');
+        require(!store.isInAuction(tokenId), 'ANE');
         bool cancelled = store.isCancelled(tokenId, auctionId);
         address owner = t.ownerOf(tokenId);
         address highestBidder = store.getHighestBidder(tokenId, auctionId);
@@ -282,13 +279,13 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
     }
 
     // TODO: Check if there are no bids before cancelling.
-    function cancelAuction(uint256 tokenId, uint256 auctionId) public override nonReentrant {
-        require(msg.sender == minter, 'access denied');
-        shouldBeStarted(tokenId, auctionId);
-        require(store.getBids(tokenId, auctionId).length > 0);
-        store.setCancelled(tokenId, auctionId, true);
-        emit LogCanceled();
-    }
+    // function cancelAuction(uint256 tokenId, uint256 auctionId) public override nonReentrant {
+    //     require(msg.sender == minter, 'access denied');
+    //     shouldBeStarted(tokenId, auctionId);
+    //     require(store.getBids(tokenId, auctionId).length > 0);
+    //     store.setCancelled(tokenId, auctionId, true);
+    //     emit LogCanceled();
+    // }
 
     function getTokenInfo(uint256 tokenId) public view override returns (Models.Asset memory) {
         Token t = store.getToken(tokenId);
@@ -323,18 +320,18 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         require(store.isInAuction(tokenId), 'ANIP');
     }
 
-    function setIssuerFeesPercentage(uint256 perc) public override {
-        require(msg.sender == minter, 'access denied');
-        store.setIssuerFeesPercentage(perc);
-    }
+    // function setIssuerFeesPercentage(uint256 perc) public override {
+    //     require(msg.sender == minter, 'access denied');
+    //     store.setIssuerFeesPercentage(perc);
+    // }
 
-    function setXendFeesAddress(address payable add) public override {
-        require(msg.sender == minter, 'access denied');
-        store.setXendFeesAddress(add);
-    }
+    // function setXendFeesAddress(address payable add) public override {
+    //     require(msg.sender == minter, 'access denied');
+    //     store.setXendFeesAddress(add);
+    // }
 
-    function setBuyWithToken(uint256 tokenId, bool bwt) public override {
-        require(msg.sender == minter, 'access denied');
-        store.setBuyWithToken(tokenId, bwt);
-    }
+    // function setBuyWithToken(uint256 tokenId, bool bwt) public override {
+    //     require(msg.sender == minter, 'access denied');
+    //     store.setBuyWithToken(tokenId, bwt);
+    // }
 }

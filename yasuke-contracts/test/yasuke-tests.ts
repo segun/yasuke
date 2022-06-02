@@ -26,7 +26,7 @@ describe('YASUKE', function () {
         console.log('Store deployed to:', store.address)
 
         const Yasuke = await ethers.getContractFactory('Yasuke')
-        yasuke = await Yasuke.deploy(store.address, legalTender.address)
+        yasuke = await Yasuke.deploy(store.address)
         await yasuke.deployed()
         console.log('YASUKE deployed to:', yasuke.address)
 
