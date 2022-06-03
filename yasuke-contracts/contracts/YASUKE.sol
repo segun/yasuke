@@ -23,16 +23,6 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         store.setAdmin(address(this), msg.sender);
     }
 
-    function upgrade(address storeAddress) public {
-        require(msg.sender == minter, 'access denied');
-        store = StorageInterface(storeAddress);
-        store.setAdmin(address(this), msg.sender);
-    }
-
-    function testUpgrade() public view returns (address, address) {
-        return (store.getAdmin(), store.getParent());
-    }
-
     function startAuction(
         uint256 tokenId,
         uint256 auctionId,
@@ -80,11 +70,11 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         store.setOwner(tokenId, owner);
     }
 
-    // function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
-    //     require(msg.sender == minter, 'no access');
-    //     shouldBeStarted(tokenId, auctionId);
-    //     store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
-    // }
+    function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
+        require(msg.sender == minter, 'no access');
+        shouldBeStarted(tokenId, auctionId);
+        store.setEndBlock(tokenId, auctionId, block.number); // forces the auction to end
+    }
 
     // function buyNow(uint256 tokenId) public payable override nonReentrant {
     //     Token t = store.getToken(tokenId);
@@ -176,31 +166,34 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
 
         emit LogBid(msg.sender, newBid);
 
-        if (newBid >= sellNowPrice && sellNowPrice != 0) {
-            store.setInAuction(tokenId, false);
+        if (newBid >= sellNowPrice && sellNowPrice != 0) {            
             _withdrawal(tokenId, auctionId);
         }
+    }
+
+    function _endBid(uint256 tokenId, uint256 auctionId) internal {
+        store.setInAuction(tokenId, false); // we can create new auction
+        store.setFinished(tokenId, auctionId, true);
+        store.setStarted(tokenId, auctionId, false);
+        store.setHighestBidder(tokenId, auctionId, address(0));
+        store.setHighestBid(tokenId, auctionId, 0);
     }
 
     function _withdrawal(uint256 tokenId, uint256 auctionId) internal {
         require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
         require(store.isStarted(tokenId, auctionId), 'BANS');
-        require(!store.isInAuction(tokenId), 'ANE');
+        require(store.isInAuction(tokenId), 'ANE');
         bool cancelled = store.isCancelled(tokenId, auctionId);
-        address owner = t.ownerOf(tokenId);
+        address payable owner = payable(t.ownerOf(tokenId));
         address highestBidder = store.getHighestBidder(tokenId, auctionId);
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
 
         if (cancelled) {
             // owner can not withdraw anything
             require(msg.sender != owner, 'AWC');
+            _endBid(tokenId, auctionId);
             // refund highest bidder
-            store.setInAuction(tokenId, false); // we can create new auction
-            store.setFinished(tokenId, auctionId, true);
-            store.setStarted(tokenId, auctionId, false);
-            store.setHighestBidder(tokenId, auctionId, address(0));
-            store.setHighestBid(tokenId, auctionId, 0);
             (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount, gas: 2300}('');
             require(sent, 'CNCOCNRHB');
         } else {
@@ -209,33 +202,23 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
             // if failed...refund highest bidder, end auction
             if (changeOwnershipSuccess == false) {
                 // end auction
+                _endBid(tokenId, auctionId);
                 // refund highest bidder
-                store.setInAuction(tokenId, false); // we can create new auction
-                store.setFinished(tokenId, auctionId, true);
-                store.setStarted(tokenId, auctionId, false);
-                store.setHighestBidder(tokenId, auctionId, address(0));
-                store.setHighestBid(tokenId, auctionId, 0);
                 (bool sent, ) = payable(highestBidder).call{value: withdrawalAmount, gas: 2300}('');
                 require(sent, 'CNCOCNRHB');
             } else {
                 // withdraw funds from highest bidder
-                _withdrawOwner(tokenId, auctionId);
-                store.setInAuction(tokenId, false); // we can create new auction
+                _withdrawOwner(tokenId, auctionId, owner);
                 store.setOwner(tokenId, highestBidder);
-                store.setFinished(tokenId, auctionId, true);
-                store.setStarted(tokenId, auctionId, false);
-                store.setHighestBidder(tokenId, auctionId, address(0));
-                store.setHighestBid(tokenId, auctionId, 0);
-
+                _endBid(tokenId, auctionId);
                 emit LogWithdrawal(msg.sender, tokenId, auctionId);
             }
         }
     }
 
-    function _withdrawOwner(uint256 tokenId, uint256 auctionId) internal {
+    function _withdrawOwner(uint256 tokenId, uint256 auctionId, address payable owner) internal {
         require(tx.origin == msg.sender, 'EOA');
         Token t = store.getToken(tokenId);
-        address payable owner = payable(t.ownerOf(tokenId));
         uint256 withdrawalAmount = store.getHighestBid(tokenId, auctionId);
 
         if (withdrawalAmount == 0) {
@@ -249,8 +232,7 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         uint256 ifp = store.getIssuerFeesPercentage();
 
         if (t.getIssuer() == owner) {
-            // owner is issuer, xendFees is xendFees + issuerFees
-            xfp = store.getXendFeesPercentage().add(store.getIssuerFeesPercentage());
+            // no issuer fees,
             ifp = 0;
         }
 

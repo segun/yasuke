@@ -30,8 +30,8 @@ contract Storage is StorageInterface {
 
     address internal parent = address(0);
 
-    uint256 internal xendFeesPercentage = 5;
-    uint256 internal issuerFeesPercentage = 10;
+    uint256 internal xendFeesPercentage = 2;
+    uint256 internal issuerFeesPercentage = 5;
     address payable internal xendFeesAddress = payable(0x616B6c01DFeA4AF613326FDF683429f43CEe86FD);
 
     function setXendFeesPercentage(uint256 _percentage) public override {
