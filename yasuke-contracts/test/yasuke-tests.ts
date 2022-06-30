@@ -5,28 +5,27 @@ import { assert } from 'chai';
 describe('YASUKE', function () {
     let yasuke: Contract;
     let store: Contract;
-    let legalTender: Contract;
 
     const blockTime = 3;
     let auctionId = 9;
     const snp = '250';
     const tokenIds: number[] = new Array(5).fill(0).map((x) => Math.floor(Math.random() * 10000) + 1);
     const uri = 'http://xendbit.com/{0}';
-    let accounts = [];
+    let accounts: any[] = [];
 
     before(async () => {
-        const LegalTender = await ethers.getContractFactory('LegalTender');
-        legalTender = await LegalTender.deploy();
-        await legalTender.deployed();
-        console.log('Legal Tender deployed to:', legalTender.address);
-
         const Storage = await ethers.getContractFactory('Storage');
         store = await Storage.deploy();
         await store.deployed();
         console.log('Store deployed to:', store.address);
 
+        const PhysicalArts = await ethers.getContractFactory("PhysicalArts");
+        const physicalStore = await PhysicalArts.deploy();
+        await physicalStore.deployed();
+        console.log("Physical Store deployed to:", physicalStore.address);
+
         const Yasuke = await ethers.getContractFactory('Yasuke');
-        yasuke = await Yasuke.deploy(store.address);
+        yasuke = await Yasuke.deploy(store.address, physicalStore.address);
         await yasuke.deployed();
         console.log('YASUKE deployed to:', yasuke.address);
 

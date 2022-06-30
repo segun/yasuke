@@ -7,7 +7,6 @@ async function main() {
     let deployLegalTender = false;
     let storeAddress = "0xA34B45D9145Ab27F88170aA185291Cf6fafa83D8";
     let physicalStoreAddress = "";
-    let legalTenderAddress = "0x385D6203709018591Ddec4552fcff3627d7D21cD";
 
     console.log(
         "Deploying contracts with the account:",
@@ -32,17 +31,8 @@ async function main() {
         physicalStoreAddress = physicalStore.address;        
     }
 
-    if (deployLegalTender) {
-        console.log("Deploying Legal Tender. ");
-        const LegalTender = await ethers.getContractFactory("LegalTender");
-        const legalTender = await LegalTender.deploy();
-        await legalTender.deployed();
-        console.log("Legal Tender deployed to:", legalTender.address);
-        legalTenderAddress = legalTender.address;        
-    }
 
     const Yasuke = await ethers.getContractFactory("Yasuke");
-    //yasuke = await Yasuke.deploy(storeAddress, legalTenderAddress);
     yasuke = await Yasuke.deploy(storeAddress, physicalStoreAddress);
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);
