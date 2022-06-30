@@ -19,7 +19,8 @@ interface YasukeInterface {
         address payable owner,
         string memory _uri,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        bool isPhysicalArt
     ) external;
 
     function getTokenInfo(uint256 tokenId) external view returns (Models.Asset memory);
@@ -39,8 +40,6 @@ interface YasukeInterface {
     function setIssuerFeesPercentage(uint256 percentage) external;
 
     function setXendFeesAddress(address payable xfAddress) external;
-
-    function setBuyWithToken(uint256 tokenId, bool bwt) external;
 
     event LogBid(address indexed, uint256 indexed);
 

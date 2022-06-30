@@ -27,7 +27,6 @@ contract Storage is StorageInterface {
     mapping(uint256 => Token) internal tokens;
 
     address internal admin = address(0);
-
     address internal parent = address(0);
 
     uint256 internal xendFeesPercentage = 2;

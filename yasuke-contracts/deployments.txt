@@ -1,3 +1,27 @@
+Mon 28 June 2022
+-------------------------------
+➜  yasuke-contracts git:(master) ✗ yarn deploy --network avalanche
+yarn run v1.22.18
+warning package.json: No license field
+$ npx hardhat run scripts/deploy.js --network avalanche
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 2563841700000000000
+Deploying store. 
+Store deployed to: 0x4fCA7E7E7803e2e51181945345D7b5a5CCE6f0CD
+Deploying physical store. 
+Physical Store deployed to: 0x6313BeFE36d7A1F50A02B25c3e4D00EceD2D6A16
+YASUKE deployed to: 0x0dfF0d5C2cCD6ED3942dD6F5a9d04BF508CEECD8
+
+Mon 20 June 2022
+-------------------------------
+Deploying contracts with the account: 0xE447B45EA6FD4c8B76b25354a503C793826e5294
+Account balance: 2803862275000000000
+Deploying store. 
+Store deployed to: 0x0470d78cD4c7F7B231809CB8EBEAC093D8C7fA0F
+Deploying Legal Tender. 
+Legal Tender deployed to: 0x643A9ecF0504C85d4240a11F163Aa51d209241d3
+YASUKE deployed to: 0x24738DAE29c0D0e26cDE5b1bC8503EB0E8D8662f
+
 Tue 01 June 2022 17:48:19 +04
 -----------------------------------
 

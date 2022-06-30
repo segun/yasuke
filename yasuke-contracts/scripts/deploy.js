@@ -4,8 +4,9 @@ async function main() {
     const deployer = signers[0];
 
     let deployStore = true;
-    let deployLegalTender = true;
+    let deployLegalTender = false;
     let storeAddress = "0xA34B45D9145Ab27F88170aA185291Cf6fafa83D8";
+    let physicalStoreAddress = "";
     let legalTenderAddress = "0x385D6203709018591Ddec4552fcff3627d7D21cD";
 
     console.log(
@@ -22,6 +23,13 @@ async function main() {
         await store.deployed();
         console.log("Store deployed to:", store.address);
         storeAddress = store.address;
+
+        console.log("Deploying physical store. ");
+        const PhysicalArts = await ethers.getContractFactory("PhysicalArts");
+        const physicalStore = await PhysicalArts.deploy();
+        await physicalStore.deployed();
+        console.log("Physical Store deployed to:", physicalStore.address);
+        physicalStoreAddress = physicalStore.address;        
     }
 
     if (deployLegalTender) {
@@ -35,11 +43,9 @@ async function main() {
 
     const Yasuke = await ethers.getContractFactory("Yasuke");
     //yasuke = await Yasuke.deploy(storeAddress, legalTenderAddress);
-    yasuke = await Yasuke.deploy(storeAddress);
+    yasuke = await Yasuke.deploy(storeAddress, physicalStoreAddress);
     await yasuke.deployed();
     console.log("YASUKE deployed to:", yasuke.address);
-    const a = await yasuke.testUpgrade();
-    console.log(`Upgrade Successful with ${a}`);
 }
 
 main()

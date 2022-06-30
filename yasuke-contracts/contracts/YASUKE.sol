@@ -6,6 +6,7 @@ import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './library/models.sol';
 import './interfaces/StorageInterface.sol';
+import './interfaces/PhysicalArtsInterface.sol';
 import './interfaces/YasukeInterface.sol';
 
 // TODO: Calculate Fees
@@ -14,13 +15,17 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
     address internal minter;
 
     StorageInterface internal store;
+    PhysicalArtsInterface internal physicalStore;
 
     address internal burnAddress = 0x000000000000000000000000000000000000dEaD;
 
-    constructor(address storeAddress) {
+    constructor(address storeAddress, address physicalStoreAddress) {
         minter = msg.sender;
         store = StorageInterface(storeAddress);
         store.setAdmin(address(this), msg.sender);
+
+        physicalStore = PhysicalArtsInterface(physicalStoreAddress);
+        physicalStore.setAdmin(address(this), msg.sender);
     }
 
     function startAuction(
@@ -57,17 +62,30 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
         store.startAuction(ai);
     }
 
+    function sellNow(uint256 tokenId, uint256 sellNowPrice) public {
+        physicalStore.sellNow(tokenId, sellNowPrice);
+    }
+
+    function bought(uint256 tokenId) public {
+        physicalStore.bought(tokenId);
+    }
+
     function issueToken(
         uint256 tokenId,
         address payable owner,
         string memory _uri,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        bool isPhysicalArt
     ) public override nonReentrant {
         Token t = new Token(owner, _uri, _name, _symbol);
         require(t.mint(tokenId), 'MF');
-        store.addToken(tokenId, t);
-        store.setOwner(tokenId, owner);
+        if(isPhysicalArt) {
+            physicalStore.addToken(tokenId, t);
+        } else {
+            store.addToken(tokenId, t);
+            store.setOwner(tokenId, owner);
+        }
     }
 
     function endBid(uint256 tokenId, uint256 auctionId) public nonReentrant {
@@ -128,7 +146,6 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
     }
 
     function _endBid(uint256 tokenId, uint256 auctionId) internal {
-        require(msg.sender == minter, 'access denied');
         store.setInAuction(tokenId, false); // we can create new auction
         store.setFinished(tokenId, auctionId, true);
         store.setStarted(tokenId, auctionId, false);
@@ -258,10 +275,5 @@ contract Yasuke is YasukeInterface, ReentrancyGuard {
     function setXendFeesAddress(address payable add) public override {
         require(msg.sender == minter, 'access denied');
         store.setXendFeesAddress(add);
-    }
-
-    function setBuyWithToken(uint256 tokenId, bool bwt) public override {
-        require(msg.sender == minter, 'access denied');
-        store.setBuyWithToken(tokenId, bwt);
     }
 }
